@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Equals"
-date:   2018-04-08 22:10:25 +0800
+date:   2020-07-20 22:10:25 +0800
 categories: jekyll update
 ---
 在Java中，假如a是个变量，b = (a == a)
