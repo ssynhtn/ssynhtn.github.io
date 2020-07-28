@@ -1,14 +1,8 @@
-
 ---
-
 layout: post
-
 title: "Restart an app programmatically"
-
 date: 2020-07-28 22:10:25 +0800
-
 categories: android
-
 ---
 
 虽然已经有Jake写了一个[ProcessPhoenix](https://github.com/JakeWharton/ProcessPhoenix/blob/master/process-phoenix/src/main/java/com/jakewharton/processphoenix/ProcessPhoenix.java)这样的类来强制重启app了
