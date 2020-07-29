@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Does SharedPreferences loads data in the UI thread"
+title:  "Does SharedPreferences load data in the UI thread"
 date:   2020-07-28 22:10:26 +0800
 categories: android
 ---

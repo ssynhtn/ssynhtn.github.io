@@ -1,0 +1,26 @@
+---
+layout: post
+title:  "SetFlags Method and bits manipulation"
+date:   2020-07-29 14:20:25 +0800
+categories: android
+---
+here is a piece of code from Window.java
+    public void setFlags(int flags, int mask) {
+        final WindowManager.LayoutParams attrs = getAttributes();
+        attrs.flags = (attrs.flags&~mask) | (flags&mask);
+        mForcedWindowFlags |= mask;
+        dispatchWindowAttributesChanged(attrs);
+    }
+
+here we see that attrs.flags is modified, using param flags and mask
+attrs.flags = (attrs.flags&~mask) | (flags&mask);
+
+if we think about it, (A&~B) is swiping bits from B out of A
+and, (A&B) can be viewed as modifying A, keeping the only the bits that also appears in B, but not adding more
+
+| is of course union
+
+the result is to modify attrs.flags in such a way that for areas/bits outside of mask, they are kept as is using the first &~ operation, 
+and for the area/bit inside the mask, they are first wiped out, then replaced with bits from flags&masks
+
+in one sentence, that is to replace the mask area with bits from flags
