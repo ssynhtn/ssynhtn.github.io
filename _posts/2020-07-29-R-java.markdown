@@ -27,7 +27,8 @@ R.java是个神奇的东西，从gradle3.3.0开始Android Studio就不再生成R
     if (a.hasValue(R.styleable.Window_windowBackground)) {
 	    mBackgroundDrawable = a.getDrawable(R.styleable.Window_windowBackground);
     }
-可是我记得windowBackground在attrs.xml中是定义在Theme中的
+
+可是我记得windowBackground在sdk的attrs.xml中是定义在Theme中的
 
     <declare-styleable  name="Theme">
 	    <attr  name="windowBackground"  format="reference|color" />
