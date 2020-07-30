@@ -4,69 +4,109 @@ title:  "R.java"
 date:   2020-07-30 18:20:25 +0800
 categories: android
 ---
+
 R.java是个神奇的东西，从gradle3.3.0开始Android Studio就不再生成R.java了:
-Faster R class generation for library projects: Previously, the Android Gradle plugin would generate an R.java file for each of your project's dependencies and then compile those R classes alongside your app's other classes. The plugin now generates a JAR containing your app's compiled R class directly, without first building intermediate R.java classes. This optimization may significantly improve build performance for projects that include many library subprojects and dependencies, and improve the indexing speed in Android Studio.
+
+> Faster R class generation for library projects: Previously, the
+> Android Gradle plugin would generate an R.java file for each of your
+> project's dependencies and then compile those R classes alongside your
+> app's other classes. The plugin now generates a JAR containing your
+> app's compiled R class directly, without first building intermediate
+> R.java classes. This optimization may significantly improve build
+> performance for projects that include many library subprojects and
+> dependencies, and improve the indexing speed in Android Studio.
+
+  
 
 这对于不知道R.java到底是什么的我不是很友好，我知道里面是一堆int，没有其它了
 
-今天我发现PhoneWindow类中读取主题中windowBackground设置的时候是这样的
-if (a.hasValue(R.styleable.Window_windowBackground)) {
-	mBackgroundDrawable = a.getDrawable(R.styleable.Window_windowBackground);
-}
+  
 
+今天我发现PhoneWindow类中读取主题中windowBackground设置的时候是这样的
+
+    if (a.hasValue(R.styleable.Window_windowBackground)) {
+	    mBackgroundDrawable = a.getDrawable(R.styleable.Window_windowBackground);
+    }
 可是我记得windowBackground在attrs.xml中是定义在Theme中的
-<declare-styleable name="Theme">
-...
-<attr name="windowBackground" format="reference|color" />
-...
-</declare-styleable>
+
+    <declare-styleable  name="Theme">
+	    <attr  name="windowBackground"  format="reference|color" />
+    </declare-styleable>
+
+  
 
 但是Window那里确实也定义了这个windowBackground
-<!-- The set of attributes that describe a Windows's theme. -->
-    <declare-styleable name="Window">
-        <attr name="windowBackground" />
-		...
-	<declare-styleable>
 
+    <!-- The set of attributes that describe a Windows's theme. -->
+    <declare-styleable name="Window">
+	    <attr name="windowBackground" />
+    <declare-styleable>
+
+  
+  
 
 所以attr只要在不同的declare-styleable中可以定义多次吗？
+
 实际定义了一下发现，如果两个地方都指定了format, 那么不行，会报错
-当时如果第二个地方只声明<attr name="xxx" />就可以
+
+当时如果第二个地方只声明<attr  name="xxx" />就可以
+
+  
 
 所以我想仔细看一下在R.java中这些这些styleable, attr都是怎么定义的
+
 1， 先找到R.java => 已经没有了
-2， 找到R.jar，位置大约在/app/build/intermediates/compile_and_runtime_not_namespaced_r_class_jar/debug/R.jar 
+
+2， 找到R.jar，位置大约在/app/build/intermediates/compile_and_runtime_not_namespaced_r_class_jar/debug/R.jar
+
 3， 打开JD-GUI => 奔溃了
+
 4， 搜索崩溃原因，据说是因为jdk版本不对，我安装的是jdk11, 目前的解决方法是：https://github.com/java-decompiler/jd-gui/issues/196#issuecomment-399310827， 需要在一个.sh文件中添加这两行
+
 --add-opens java.base/jdk.internal.loader=ALL-UNNAMED
+
 --add-opens jdk.zipfs/jdk.nio.zipfs=ALL-UNNAMED
+
 5, 打开后发现我需要的几个定义
-class attr {
-	public static final int sivInputCount = 2130969217;
-	public static final int sivMinInputCount = 2130969218;
-	public static final int sivTotalCount = 2130969219;
-}
-class styleable {
-	public static final int[] StockInputView = { 2130969217, 2130969218, 2130969219 };
-	public static final int StockInputView_sivInputCount = 0;
-	public static final int StockInputView_sivMinInputCount = 1;
-	public static final int StockInputView_sivTotalCount = 2;
-	public static final int[] Cat = { 2130969217 };
-	public static final int Cat_sivInputCount = 0;
-}
+
+    class attr {
+	    public static final int sivInputCount = 2130969217;
+	    public static final int sivMinInputCount = 2130969218;
+	    public static final int sivTotalCount = 2130969219;
+    }
+    
+    class styleable {
+	    public static final int[] StockInputView = { 2130969217, 2130969218, 2130969219 };
+	    public static final int StockInputView_sivInputCount = 0;
+	    public static final int StockInputView_sivMinInputCount = 1;
+	    public static final int StockInputView_sivTotalCount = 2;
+	    public static final int[] Cat = { 2130969217 };
+	    public static final int Cat_sivInputCount = 0;
+    }
+
 而我在Android项目中attrs.xml中的定义是
-<declare-styleable name="StockInputView">
-	<attr name="sivInputCount" format="integer" />
-	<attr name="sivTotalCount" format="integer" />
-	<attr name="sivMinInputCount" format="integer" />
-</declare-styleable>
-<declare-styleable name="Cat">
-	<attr name="sivInputCount" />
-</declare-styleable>
+
+    <declare-styleable  name="StockInputView">
+	    <attr name="sivInputCount" format="integer" />
+	    <attr name="sivTotalCount" format="integer" />
+	    <attr name="sivMinInputCount" format="integer" />
+    </declare-styleable>
+    
+    <declare-styleable  name="Cat">
+	    <attr name="sivInputCount" />
+    </declare-styleable>
+
 
 6， 大约可以猜测如下规则：
-	1，每个<attr name="_name">会在R.attr.java中定义一个同名的int常量，所以不能重复定义
-	2，每个declare-styleable都会在R.styleable.java中定义一个同名的int数组，内容就是它包含的attr
-	3, 而StockInputView_sivInputCount这样的东西只是一个下标，= R.styleable.StockInputView.indexOf(R.attr.sivInputCount)
 
-这样就可以理解R.styleable.Window_windowBackground
+1，每个<attr name="_name">会在R.attr.java中定义一个同名的int常量，所以不能重复定义
+
+2，每个declare-styleable都会在R.styleable.java中定义一个同名的int数组，内容就是它包含的attr
+
+3, 而StockInputView_sivInputCount这样的东西只是一个下标
+
+    StockInputView_sivInputCount = R.styleable.StockInputView.indexOf(R.attr.sivInputCount)
+    // 为什么数组没有indexOf这个方法呢?
+
+  
+这样就可以理解R.styleable.Window_windowBackground了
