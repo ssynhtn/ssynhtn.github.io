@@ -65,6 +65,7 @@ https://developer.android.com/training/multiscreen/screendensities
 	 return SystemProperties.getInt("qemu.sf.lcd_density",  
 	            SystemProperties.getInt("ro.sf.lcd_density", DENSITY_DEFAULT));  
 	}
+    
 nexus  6p运行后读取DENSITY_DEVICE的值是560 = 160 * 3.5
 根据文档它会优先读取xxxhdpi文件夹下的图片，4倍图(按照3.5/4的比例缩放)
 
