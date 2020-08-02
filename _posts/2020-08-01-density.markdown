@@ -4,25 +4,22 @@ title:  "density, dpi, buckets"
 date:   2020-07-30 18:20:25 +0800
 categories: android
 ---
-ppi是一个很奇怪的词语，pixel per inch，如果你仔细想想，这本身只是一个单位pixel/inch, 320ppi表示每英寸有320个像素，它的格式就像米每秒一样
+ppi是一个很奇怪的词语，pixel per inch，如果你仔细想想，这本身只是一个单位: pixel/inch, 320ppi表示每英寸有320个像素，它的格式就像速度的单位米每秒一样
 
-但是很多人会用ppi来直接代表pixel density像素密度这个属性，“这个手机屏幕的ppi是多少”听上去还挺正常的
+但是很多人会用ppi来直接代表pixel density像素密度这个属性. “这个手机屏幕的ppi是多少”听上去还挺正常的, 但是实际上“这个手机屏幕是多少ppi”才是更正确的说法。也许对于人来说在使用不常用的单位的时候不会感到异样，但是如果有人问“这辆车的米每秒是多少”你就会发现有多奇怪了
 
-但是实际上“这个手机屏幕是多少ppi”才是正确的说法。也许对于人来说在使用不常用的单位的时候不会感到异样，但是如果有人问“这辆车的米每秒是多少”你就会发现有多奇怪了
 
-  
+在我主导的app中，每个图片我都放了5个版本，mdpi, hdpi, xhdpi, xxhdpi, xxxhdpi
 
-最近我参与的一个app中，每个图片我都放了5个版本，mdpi, hdpi, xhdpi, xxhdpi, xxxhdpi，其实我一直都这样做，因为我是个老学究，我喜欢一丝不苟
+但是我知道很多app都只放2x和3x的图片
 
-我知道很多app都只放2x和3x的图片
-
-还有哪个手机在用hdpi甚至mdpi的图片呢？
+确实，这年头还有哪个手机在用hdpi甚至mdpi的图片呢？
 
 9年前我买的nexus s它是hdpi的
 
-所以从实用的角度出发，mdpi和hdpi的图片完全可以省了
+从实用的角度出发，mdpi和hdpi的图片完全可以省了
 
-不是很确定xxxhdpi是否需要保留，它占的空间最大，但是去掉又怕在高端机型上显示效果不好
+不过我不是很确定xxxhdpi是否需要保留，它占的空间最大，但是去掉又怕在高端机型上显示效果不好
 
   
 
@@ -32,16 +29,19 @@ ppi是一个很奇怪的词语，pixel per inch，如果你仔细想想，这本
 
   
 
-谷歌的官方文档有详细的关于这方面的介绍，甚至有中文版：
+谷歌的官方文档有(比较)详细的关于这方面的介绍，甚至有中文版：
 
 [https://developer.android.com/training/multiscreen/screendensities](https://developer.android.com/training/multiscreen/screendensities)
 
-但是这个文档我已经看了不知多少遍了，始终理不清这各种名词之间的真正关系。实际上它在代码中对应的类是DisplayMetrics，并且这个类和这个文档算来算去
-也只是在算一些比值而已，所以理论上要理解它只需要小学水平的数学而已。
+但是这个文档我已经看了不知多少遍了，始终理不清这各种名词之间的真正关系。原因是它只是一直在说你应该这么做，你应该那么做，至于为什么要这么做只是一笔带过
+
+实际上这个内容在代码中对应的类是DisplayMetrics，并且这个类和这个文档算来算去都只是在算一些比值而已，所以理论上要理解它只需要小学水平的数学而已。
 
   
 
 来看看DisplayMetrics这个类吧
+
+首先：
 
     /**  
      * The reference density used throughout the system. 
@@ -49,14 +49,18 @@ ppi是一个很奇怪的词语，pixel per inch，如果你仔细想想，这本
     public static final int DENSITY_DEFAULT = DENSITY_MEDIUM;// = 160
 
 开发者的脑内有一台中古原型机，它的ppi是160
+
 一开始所有的手机都是这种中古机型，什么事情都没有
-后来三星发明了320ppi的"高端"手机，实际上手机的物理尺寸没有太大变化，但是像素颗粒变小了，像素密度变大了，这样同一张图片在高端手机上显示，同样的像素数量导致尺寸会小一半
+
+后来手机厂商发明了320ppi的"高端"手机，实际上手机的物理尺寸没有太大变化，但是像素颗粒变小了，像素密度变大了，这样同一张图片在高端手机上显示，同样的像素数量导致尺寸会小一半
 
 所以他们就发明了drawable-xhdpi这个文件夹，里面存放2x的图片，当手机的ppi为320的时候，320/160 = 2，就去读取这个文件夹中的图片，这样它们显示的大小是一样的
 
 问题是手机的ppi不会这么恰好都是160的整数倍，比如nexus s是233ppi的, nexus 6p是518ppi的
+
 所以每个手机都会根据自己的真实像素密度来归类到最接近的那一档，他们称这个为density bucket，像素密度桶，所以xhdpi一般认为是2倍图的文件夹，其实是320ppi这个像素密度的文件夹
-手机的物理像素密度和它所在的桶在绝大多数情况下是有一些误差的，它的真实像素密度其实没有被care，三星会在build.prop文件中保存它认为这个手机最适合的bucket的像素密度:
+
+手机的物理像素密度和它所在的桶在绝大多数情况下是有一些误差的，它的真实像素密度其实被跳过了，手机厂商会在build.prop文件中保存它认为这个手机最适合的bucket的像素密度:
 
     /**  
      * The device's current density. */
@@ -67,6 +71,7 @@ ppi是一个很奇怪的词语，pixel per inch，如果你仔细想想，这本
 	}
 
 nexus  6p运行后读取DENSITY_DEVICE的值是560 = 160 * 3.5
+
 根据文档它会优先读取xxxhdpi文件夹下的图片，4倍图(按照3.5/4的比例缩放)
 
     /**  
@@ -88,14 +93,20 @@ nexus  6p运行后读取DENSITY_DEVICE的值是560 = 160 * 3.5
 
 看样子DisplayMetrics.DENSITY_DEVICE和DisplayMetrics.density的含义完全不同
 前者是每英寸有多少像素，数值为几百，而且还是int型，后者是每dp有多少像素，数值为2~3左右，是float型
+
 我的脑子里不得不飘过一个飘了好多次的问题：dp是啥？逻辑像素？1dp在不同机型上是同样的物理长度吗？
 
 首先dp是一个缩写，全称density independent pixel(dip)
+
 直译：独立于像素密度的像素，常见的翻译是“密度无关像素”，官方文档把它称为“虚拟像素”
+
 dp的名称既然是以“像素”结尾，目的是为了取代像素（当然在实际View的运行中，所有 的长度还是转换成了真实的像素长度）
+
 如果在高像素密度320ppi的手机上和低像素密度160ppi的手机上同样使用100px为边长画一个按钮，高端手机上的按钮的物理尺寸会小一半
+
 so，很显然，如果在原型机上1dp=1px，那么在320ppi的手机上1dp=2px
 这里就出现了第二个像素密度：单位逻辑像素上有多少物理像素
+
 源代码如下
 
     density =  DENSITY_DEVICE / (float) DENSITY_DEFAULT;
@@ -103,9 +114,11 @@ so，很显然，如果在原型机上1dp=1px，那么在320ppi的手机上1dp=2
 这样dp2px之类的方法就可以理解了
 
 经验告诉我mdpi文件夹中的图片，它的px值就是dp值，这是因为mdpi文件夹中的图片用于160ppi的原型机，而原型机上的1dp=1px
+
 同理xhdpi文件夹的图片用于320ppi这个bucket的机型，它上面1dp=2px，因此图片的以px为单位宽度除以2就是以dp为单位的宽度
 
 从api 24(N)开始，开发者选项中开始支持自由调节“最小宽度”的设置
+
 DisplayMetrics中也新定义了一个常量
 
     /**  
@@ -115,22 +128,34 @@ DisplayMetrics中也新定义了一个常量
      public static final int DENSITY_DEVICE_STABLE = getDeviceDensity();
 
 它是final的，而DENSITY_DEVICE却不是final的，当我们修改"最小宽度"的设定时，系统会触发configuration change, Configuration.densityDpi变量会被修改，按照字面意思，densityDpi实际上就是“密度：每英寸有多少点”, 它其实就是像素密度
+
 在ActivityThread的一些中，这个DENSITY_DEVICE（像素密度bucket）会被修改为这个densityDpi，而这个改动会导致后续创建DisplayMetrics对象时density的值的改动，因为density=DENSITY_DEVICE / 160，而一旦density改动了，屏幕固定的像素长度以dp为单位的长度自然也就改动了
+
 换句话说，实际上系统是通过设置config.densityDpi = (screenWidthInPx / screenWidthInDp) * 160来设置的
+
 这个“最小宽度”指的是屏幕的宽度以dp为单位的长度
 
 最后两个问题：
 1dp在不同的机型上真实的长度一样吗？
+
 在一个完全标准的原型机上，1dp = 1px = 1/160 inch
+
 在所有机型上
+
 1dp = density * 1px
+
 density = DENSITY_DEVICE/160 ~ pxCount/lengthInInch / 160
+
 1px的物理长度为 = lengthInInch/pxCount inch
+
 因此1dp的物理长度 ~ 1/160 inch
+
 因此，仅当build.prop中的配置和手机真实的ppi完全一样，才会和原型机效果一致
+
 DENSITY_DEVICE设置偏高会导致屏幕dp单位宽度变窄，1dp的物理长度变大，按钮会显得很大
 
 很多国产中端手机的屏幕宽度都是360dp，1080p，因此density为3，说明它们设置的DENSITY_DEVICE为480ppi，而实际上以荣耀v8为例，它的真实ppi是386ppi
+
 如果它出场设置为DENSITY_400的话，屏幕dp宽度可以达到432dp(1080 / (400/160))，多出的屏幕空间会让用户体验好很多
 
 结论：不要买华为这种劣化屏幕空间的手机
