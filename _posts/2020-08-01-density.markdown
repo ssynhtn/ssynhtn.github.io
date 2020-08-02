@@ -133,11 +133,13 @@ DisplayMetrics中也新定义了一个常量
 
 它是final的，而DENSITY_DEVICE却不是final的，当我们修改"最小宽度"的设定时，系统会触发configuration change, Configuration.densityDpi变量会被修改，按照字面意思，densityDpi实际上就是“密度：每英寸有多少点”, 它其实就是像素密度
 
-在ActivityThread的一些中，这个DENSITY_DEVICE（像素密度bucket）会被修改为这个densityDpi，而这个改动会导致后续创建DisplayMetrics对象时density的值的改动，因为density=DENSITY_DEVICE / 160，而一旦density改动了，屏幕固定的像素长度以dp为单位的长度自然也就改动了
+在ActivityThread的一些中，这个 DENSITY_DEVICE （像素密度bucket）会被修改为这个densityDpi，而这个改动会导致后续创建DisplayMetrics对象时density的值的改动，因为density=DENSITY_DEVICE / 160，而一旦density改动了，屏幕固定的像素长度以dp为单位的长度自然也就改动了
 
 换句话说，实际上系统是通过设置config.densityDpi = (screenWidthInPx / screenWidthInDp) * 160来设置的
 
 这个“最小宽度”指的是屏幕的宽度以dp为单位的长度
+但是，DENSITY_DEVICE虽然改了，实测运行时选择的density bucket却没有改动
+推测是因为density bucket是按照DENSITY_DEVICE_STABLE来确定的。我想唯一能支持这种选择的原因是避免图标图片的内存占用超出出厂设置？
 
 最后两个问题：
 1dp在不同的机型上真实的长度一样吗？
