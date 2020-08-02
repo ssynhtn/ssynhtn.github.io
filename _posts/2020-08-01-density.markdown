@@ -34,7 +34,7 @@ ppi是一个很奇怪的词语，pixel per inch，如果你仔细想想，这本
 
 谷歌的官方文档有详细的关于这方面的介绍，甚至有中文版：
 
-https://developer.android.com/training/multiscreen/screendensities
+[https://developer.android.com/training/multiscreen/screendensities](https://developer.android.com/training/multiscreen/screendensities)
 
 但是这个文档我已经看了不知多少遍了，始终理不清这各种名词之间的真正关系。实际上它在代码中对应的类是DisplayMetrics，并且这个类和这个文档算来算去
 也只是在算一些比值而已，所以理论上要理解它只需要小学水平的数学而已。
@@ -65,7 +65,7 @@ https://developer.android.com/training/multiscreen/screendensities
 	 return SystemProperties.getInt("qemu.sf.lcd_density",  
 	            SystemProperties.getInt("ro.sf.lcd_density", DENSITY_DEFAULT));  
 	}
-    
+
 nexus  6p运行后读取DENSITY_DEVICE的值是560 = 160 * 3.5
 根据文档它会优先读取xxxhdpi文件夹下的图片，4倍图(按照3.5/4的比例缩放)
 
