@@ -73,8 +73,13 @@ ppi是一个很奇怪的词语，pixel per inch，如果你仔细想想，这本
 	 return SystemProperties.getInt("qemu.sf.lcd_density",  
 	            SystemProperties.getInt("ro.sf.lcd_density", DENSITY_DEFAULT));  
 	}
+    densityDpi = DENSITY_DEVICE;
 
-nexus  6p运行后读取DENSITY_DEVICE的值是560 = 160 * 3.5
+nexus 6p运行后读取DENSITY_DEVICE的值是560 = 160 * 3.5‘
+
+densityDpi这个变量按照字面意思，实际上就是“密度：每英寸有多少点”, 它其实就是像素密度
+
+但它是厂商在build.prop文件中配置的，因此只是接近于真实的ppi，但是不妨可以把它就当作ppi来看待
 
 根据文档它会优先读取xxxhdpi文件夹下的图片，4倍图(按照3.5/4的比例缩放)
 
@@ -117,6 +122,11 @@ so，很显然，如果在原型机上1dp=1px，那么在320ppi的手机上1dp=2
 
 这样dp2px之类的方法就可以理解了
 
+可以从densityDpi和density的取值看到它们恰好差160倍, 一个是DENSITY_DEVICE（从build.prop读取），另一个要除以160
+
+仔细想想这不难理解，在160ppi的原型机上1dp占用1个px，在320ppi的机型上1dp占用2个px
+
+
 经验告诉我mdpi文件夹中的图片，它的px值就是dp值，这是因为mdpi文件夹中的图片用于160ppi的原型机，而原型机上的1dp=1px
 
 同理xhdpi文件夹的图片用于320ppi这个bucket的机型，它上面1dp=2px，因此图片的以px为单位宽度除以2就是以dp为单位的宽度
@@ -131,9 +141,9 @@ DisplayMetrics中也新定义了一个常量
      */
      public static final int DENSITY_DEVICE_STABLE = getDeviceDensity();
 
-它是final的，而DENSITY_DEVICE却不是final的，当我们修改"最小宽度"的设定时，系统会触发configuration change, Configuration.densityDpi变量会被修改，按照字面意思，densityDpi实际上就是“密度：每英寸有多少点”, 它其实就是像素密度
+它是final的，而DENSITY_DEVICE却不是final的，当我们修改"最小宽度"的设定时，系统会触发configuration change, Configuration.densityDpi变量会被修改
 
-在ActivityThread的一些中，这个 DENSITY_DEVICE （像素密度bucket）会被修改为这个densityDpi，而这个改动会导致后续创建DisplayMetrics对象时density的值的改动，因为density=DENSITY_DEVICE / 160，而一旦density改动了，屏幕固定的像素长度以dp为单位的长度自然也就改动了
+在ActivityThread的一些中，这个 DENSITY_DEVICE （像素密度bucket）会被修改为这个densityDpi，而这个改动会导致后续创建DisplayMetrics对象时density和densityDpi的值的改动，因为density=DENSITY_DEVICE / 160，而一旦density改动了，屏幕固定的像素长度以dp为单位的长度自然也就改动了
 
 换句话说，实际上系统是通过设置config.densityDpi = (screenWidthInPx / screenWidthInDp) * 160来设置的
 
