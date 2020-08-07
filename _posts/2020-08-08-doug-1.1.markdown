@@ -51,3 +51,39 @@ Atomic actions are performed as units, without any interleaving of the actions o
     改动字段时要锁
     获取字段也要锁？
     调用其它对象的方法，不要锁
+
+These rules have many exceptions and refinements, but they provide enough guidance to write class Particle
+这些原则不是死的，但是基本上是好的
+
+class Particle {protected int x;protected int y;protected final Random rng = new Random();public Particle(int initialX, int initialY) {x = initialX;y = initialY;}public synchronized void move() {x += rng.nextInt(10) - 5;y += rng.nextInt(20) - 10;}public void draw(Graphics g) {int lx, ly;synchronized (this) { lx = x; ly = y; }g.drawRect(lx, ly, 10, 10);}}
+
+
+The use of final in the declaration of the random number generator rng reflects ourdecision that this reference field cannot be changed, so it is not impacted by our locking rules.Many concurrent programs use final extensively, in part as helpful, automatically enforced documentation of design decisions that reduce the need for synchronization (see §2.1).
+final在这里有任何好处吗？
+• The draw method needs to obtain a consistent snapshot of both the x and y values. Since asingle method can return only one value at a time, and we need both the x and y values here,we cannot easily encapsulate the field accesses as a synchronized method. We insteaduse a synchronized block. (See § 2.4 for some alternatives.)
+为了获取一致的x, y的数值，用了一个同步块获取
+• The draw method conforms to our rule of thumb to release locks during method invocations on other objects (here g.drawRect). The move method appears to break this rule bycalling rng.nextInt. However, this is a reasonable choice here because each Particle confines its own rng — conceptually, the rng is just a part of theParticle itself, so it doesn't count as an "other" object in the rule. Section § 2.3 describes more general conditions under which this sort of reasoning applies and discusses factors thatshould be taken into account to be sure that this decision is warranted
+draw方法跟随了原则，在同步块外部调用canvas的draw方法
+move方法似乎是违反了这个原则，但是rnd这个对象是我们自己拥有的对象，所以它不算“其它”对象?
+
+
+1.1.1.2 ParticleCanvas
+ParticleCanvas is a simple subclass of java.awt.Canvas that provides a drawing area for all of the Particles. Its main responsibility is to invoke draw for all existing particles whenever its paint method is called.
+However, the ParticleCanvas itself does not create or manage the particles. It needs either tobe told about them or to ask about them. Here, we choose the former.
+粒子画布类 extends java.awt.Canvas，它不管理粒子对象，只负责画画
+要么它主动获取粒子，要么我们注入粒子，这里我们选择向它注入粒子对象
+
+class ParticleCanvas extends Canvas {private Particle[] particles = new Particle[0];ParticleCanvas(int size) {setSize(new Dimension(size, size));}// intended to be called by appletprotected synchronized void setParticles(Particle[] ps) {if (ps == null)throw new IllegalArgumentException("Cannot set null");particles = ps;}protected synchronized Particle[] getParticles() {return particles;}public void paint(Graphics g) { // override Canvas.paintParticle[] ps = getParticles();for (int i = 0; i < ps.length; ++i)ps[i].draw(g);}}
+
+The Particle and ParticleCanvas classes could be used as the basis of several differentprograms. But in ParticleApplet all we want to do is set each of a collection of particles in autonomous "continuous" motion and update the display accordingly to show where they are. Tocomply with standard applet conventions, these activities should begin when Applet.start is externally invoked (normally from within a web browser), and should end when Applet.stop isinvoked. (We could also add buttons allowing users to start and stop the particle animation themselves.)
+我们的目标是让粒子自主，连续地移动
+
+There are several ways to implement all this. Among the simplest is to associate an independent loopwith each particle and to run each looping action in a different thread.
+一个傻瓜方法是：每个粒子由一个线程在一个循环中控制
+
+Each instance of the Thread class maintains the control state necessary to execute and manage thecall sequence comprising its action. The most commonly used constructor in class Thread accepts aRunnable object as an argument, which arranges to invoke the Runnable's run method whenthe thread is started. While any class can implement Runnable, it often turns out to be bothconvenient and helpful to define a Runnable as an anonymous inner class
+
+
+The ParticleApplet class uses threads in this way to put particles into motion, and cancelsthem when the applet is finished. This is done by overriding the standard Applet methods start
+and stop (which have the same names as, but are unrelated to, methods Thread.start andThread.stop).
+Thread.stop方法已经废弃了
