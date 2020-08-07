@@ -1,0 +1,53 @@
+---
+layout: post
+title:  "Doug Lea 1.1"
+date:   2020-08-08 18:20:25 +0800
+categories: java
+---
+
+1.1 Using Concurrency Constructs
+使用并发构造？
+
+This section introduces basic concurrency support constructs by example and then proceeds with awalk-through of the principal methods of class Thread. Other concurrency constructs are briefly
+described as they are introduced, but full technical details are postponed to later chapters (mainly §2.2.1 and § 3.2.2). Also, concurrent programs often make use of a few ordinary Java programminglanguage features that are not as widely used elsewhere. These are briefly reviewed as they arise.
+
+基本的支持并发编程的构造
+Thread类的主要方法
+
+
+1.1.1 A Particle Applet
+粒子applet
+ParticleApplet is an Applet that displays randomly moving particles. In addition to concurrency constructs, this example illustrates a few of the issues encountered when using threads with any GUI-based program. The version described here needs a lot of embellishment to be visually attractive or realistic. You might enjoy experimenting with additions and variations as an exercise.
+ParticleApplet类
+图形界面编程中使用线程都会碰到的一些问题
+
+As is typical of GUI-based programs, ParticleApplet uses several auxiliary classes that do most of the work. We'll step through construction of the Particle and ParticleCanvas classes before discussing ParticleApplet.
+applet依赖于Paticle, ParticleCancas这两个类
+
+1.1.1.1 Particle
+The Particle class defines a completely unrealistic model of movable bodies. Each particle isrepresented only by its (x, y) location. Each particle also supports a method to randomly change itslocation and a method to draw itself (as a small square) given a supplied java.awt.Graphicsobject.
+
+While Particle objects do not themselves exhibit any intrinsic concurrency, their methods may beinvoked across multiple concurrent activities. When one activity is performing a move and another isinvoking draw at about the same time, we'd like to make sure that the draw paints an accuraterepresentation of where the Particle is. Here, we require that draw uses the location valuescurrent either before or after the move. For example, it would be conceptually wrong for a drawoperation to display using the y-value current before a given move, but the x-value current after themove. If we were to allow this, then the draw method would sometimes display the particle at alocation that it never actually occupied.
+
+Particle类有move， draw两个方法
+如果不同的线程调用这2个方法，可能出现的错误：draw的时候x，y取值，一个为move之前的，一个为之后的
+
+
+This protection can be obtained using the synchronized keyword, which can modify either a method or a block of code. Every instance of class Object (and its subclasses) possesses a lock that is obtained on entry to a synchronized method and automatically released upon exit. The code-block version works in the same way except that it takes an argument stating which object to lock. The most common argument is this, meaning to lock the object whose method is executing. When alock is held by one thread, other threads must block waiting for the holding thread to release the lock.Locking has no effect on non-synchronized methods, which can execute even if the lock is being heldby another thread
+
+synchronized关键字可以防止这种情况发生
+Java中每个对象都拥有一个锁，一个线程进入一个synchronized方法时会获取这个锁(锁住当前对象)，或者进入一个synchronized block(同步块)时获取同步块参数的锁. 当锁被一个线程持有，其它线程进入同步块时会被阻塞(block). 不过锁对非同步对代码块没有这种作用.
+
+Locking provides protection against both high-level and low-level conflicts by enforcing atomicity among methods and code-blocks synchronized on the same object.
+被同步对代码块和方法，锁强制了原子性, 防止了包括高层次和低层次的冲突 
+
+Atomic actions are performed as units, without any interleaving of the actions of other threads. But, as discussed in §1.3.2 and in Chapter 2, too much locking can also produce liveness problems that cause programs tofreeze up. Rather than exploring these issues in detail now, we'll rely on some simple default rules for writing methods that preclude interference problems:
+• Always lock during updates to object fields.
+• Always lock during access of possibly updated object fields.
+• Never lock when invoking methods on other objects.
+
+太多锁会造成活跃性问题
+三个基本的原则：
+    改动字段时要锁
+    获取字段也要锁？
+    调用其它对象的方法，不要锁
