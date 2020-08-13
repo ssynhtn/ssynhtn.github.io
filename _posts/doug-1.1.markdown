@@ -86,4 +86,4 @@ Each instance of the Thread class maintains the control state necessary to execu
 
 The ParticleApplet class uses threads in this way to put particles into motion, and cancelsthem when the applet is finished. This is done by overriding the standard Applet methods start
 and stop (which have the same names as, but are unrelated to, methods Thread.start andThread.stop).
-Thread.stop方法已经废弃了
+Thread.stop方法已经废弃了, 实际用interrupt方法来通知线程，线程中的代码主动检查interrupt来判断是否结束运行

@@ -1,0 +1,31 @@
+---
+layout: post
+title:  "join, wait"
+date:   2020-08-13 18:20:26 +0800
+categories: android
+---
+
+join是一个名字很奇怪的方法，当我们在一个线程中想等待另一个线程t运行结束， 可以调用t.join()
+
+        try {
+            t.join();
+        } catch (InterruptedException e) {
+            // 等待t结束被中断
+        }
+
+和wait, notify不同，它是定义在Thread上的函数，因为你是在等待一个线程执行结束
+
+另一个不同是：你不需要先获取t的监视器锁
+
+join的实现本身就是依赖于wait()，它整个方法都是synchronized:
+
+    synchronized join() {
+        while (isAlive()) {
+            wait(0);
+        }
+    }
+
+
+所以：
+如果调用join时这个thread已经结束，那么直接通过
+如果未结束，那么会wait在这个thread上，thread结束时会调用notifyAll，这样就通过了
