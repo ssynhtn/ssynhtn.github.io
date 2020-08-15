@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Doug Lea 1.1"
+title:  "Doug Lea 1.1.1"
 date:   2020-08-08 18:20:25 +0800
 categories: java
 ---
@@ -87,3 +87,163 @@ Each instance of the Thread class maintains the control state necessary to execu
 The ParticleApplet class uses threads in this way to put particles into motion, and cancelsthem when the applet is finished. This is done by overriding the standard Applet methods start
 and stop (which have the same names as, but are unrelated to, methods Thread.start andThread.stop).
 Thread.stop方法已经废弃了, 实际用interrupt方法来通知线程，线程中的代码主动检查interrupt来判断是否结束运行
+
+The above interaction diagram shows the main message sequences during execution of the applet. 
+Applet.start -> Thread.start -> run -> particle.move, canvas.repaint -> 发送awt event
+awt线程处理awt事件：canvas.paint -> particle.draw
+
+In addition to the threads explicitly created, this applet interacts with the AWT event thread, described in
+more detail in § 4.1.4. The producer-consumer relationship extending from the omitted right hand side
+of the interaction diagram takes the approximate form:
+大致是应用线程（非ui线程）向awt线程发送event，在awt线程中处理event，运行应用代码
+
+拷贝一下代码
+class Particle {
+protected int x;
+protected int y;
+protected final Random rng = new Random();
+public Particle(int initialX, int initialY) {
+x = initialX;
+y = initialY;
+}
+public synchronized void move() {
+x += rng.nextInt(10) - 5;
+y += rng.nextInt(20) - 10;
+}
+public void draw(Graphics g) {
+int lx, ly;
+synchronized (this) { lx = x; ly = y; }
+g.drawRect(lx, ly, 10, 10);
+}
+}
+class ParticleCanvas extends Canvas {
+private Particle[] particles = new Particle[0];
+ParticleCanvas(int size) {
+setSize(new Dimension(size, size));
+}
+// intended to be called by applet
+protected synchronized void setParticles(Particle[] ps) {
+if (ps == null)
+throw new IllegalArgumentException("Cannot set null");
+particles = ps;
+}
+protected synchronized Particle[] getParticles() {
+return particles;
+}
+public void paint(Graphics g) { // override Canvas.paint
+Particle[] ps = getParticles();
+for (int i = 0; i < ps.length; ++i)
+ps[i].draw(g);
+}
+}
+public class ParticleApplet extends Applet {
+protected Thread[] threads = null; // null when not running
+protected final ParticleCanvas canvas
+= new ParticleCanvas(100);
+public void init() { add(canvas); }
+protected Thread makeThread(final Particle p) { // utility
+Runnable runloop = new Runnable() {
+public void run() {
+try {
+for(;;) {   // 这里如果检查一下当前线程是否被中断会更好
+p.move();
+canvas.repaint();
+Thread.sleep(100); // 100msec is arbitrary
+}
+}
+catch (InterruptedException e) { return; }
+}
+};
+return new Thread(runloop);
+}
+public synchronized void start() {
+int n = 10; // just for demo
+if (threads == null) { // bypass if already started
+Particle[] particles = new Particle[n];
+for (int i = 0; i < n; ++i)
+particles[i] = new Particle(50, 50);
+canvas.setParticles(particles);
+threads = new Thread[n];
+for (int i = 0; i < n; ++i) {
+threads[i] = makeThread(particles[i]);
+threads[i].start();
+}
+}
+}
+public synchronized void stop() {
+if (threads != null) { // bypass if already stopped
+for (int i = 0; i < threads.length; ++i)
+threads[i].interrupt();
+threads = null;
+}
+}
+}
+
+代码备注:
+
+
+
+The use of final in the declaration of the random number generator rng reflects our
+decision that this reference field cannot be changed, so it is not impacted by our locking rules.
+Many concurrent programs use final extensively, in part as helpful, automatically
+enforced documentation of design decisions that reduce the need for synchronization (see §
+2.1).
+使用final的字段，属于代码即文档，访问final字段不需要同步
+
+• The draw method needs to obtain a consistent snapshot of both the x and y values. Since a
+single method can return only one value at a time, and we need both the x and y values here,
+we cannot easily encapsulate the field accesses as a synchronized method. We instead
+use a synchronized block. (See § 2.4 for some alternatives.)
+draw方法为了一次性获取x和y的值，使用了同步块
+
+• The draw method conforms to our rule of thumb to release locks during method invocations
+on other objects (here g.drawRect). 
+
+The move method appears to break this rule by
+calling rng.nextInt. However, this is a reasonable choice here because each
+Particle confines its own rng — conceptually, the rng is just a part of the
+Particle itself, so it doesn't count as an "other" object in the rule. Section § 2.3 describes
+more general conditions under which this sort of reasoning applies and discusses factors that
+should be taken into account to be sure that this decision is warranted
+
+draw方法遵从了之前的原则：调用其它对象的方法要在同步块以外
+move方法貌似违反了这个原则，但是rng对象似乎可以看成是this的一部分
+
+
+The action in makeThread defines a "forever" loop (which some people prefer to write
+equivalently as "while (true)") that is broken only when the current thread is
+interrupted. During each iteration, the particle moves, tells the canvas to repaint so the move
+will be displayed, and then does nothing for a while, to slow things down to a humanviewable
+rate. Thread.sleep pauses the current thread. It is later resumed by a system
+timer.
+• One reason that inner classes are convenient and useful is that they capture all appropriate
+context variables — here p and canvas — without the need to create a separate class with
+fields that record these values. This convenience comes at the price of one minor
+awkwardness: All captured method arguments and local variables must be declared as
+final, as a guarantee that the values can indeed be captured unambiguously. Otherwise, for
+example, if p were reassigned after constructing the Runnable inside method
+makeThread, then it would be ambiguous whether to use the original or the assigned
+value when executing the Runnable.
+• The call to canvas.repaint does not directly invoke canvas.paint. The
+repaint method instead places an UpdateEvent on a java.awt.EventQueue.
+repaint方法不会直接去调用paint(那样会直接在当前线程去paint)，而是往EventQueue放了一个UpdateEvent，这个类找不到啊？1.2里似乎也没有，只有PaintEvent
+(This may be internally optimized and further manipulated to eliminate duplicate events.) A
+java.awt.EventDispatchThread asynchronously takes this event from the queue
+and dispatches it by (ultimately) invoking canvas.paint. This thread and possibly other
+system-created threads may exist even in nominally single-threaded programs.
+• The activity represented by a constructed Thread object does not begin until invocation of
+the Thread.start method.
+• As discussed in § 3.1.2, there are several ways to cause a thread's activity to stop. The
+simplest is just to have the run method terminate normally. But in infinitely looping
+methods, the best option is to use Thread.interrupt. An interrupted thread will
+automatically abort (via an InterruptedException) from the methods
+Object.wait, Thread.join, and Thread.sleep. Callers can then catch this
+exception and take any appropriate action to shut down. Here, the catch in runloop just
+causes the run method to exit, which in turn causes the thread to terminate.
+• The start and stop methods are synchronized to preclude concurrent starts or
+stops. Locking works out OK here even though these methods need to perform many
+operations (including calls to other objects) to achieve the required started-to-stopped or
+stopped-to-started state transitions. Nullness of variable threads is used as a convenient
+state indicator
+让一个线程结束的最简单的方法是使用中断interrupt()函数
+当一个线程处于阻塞状态时：当它在调用 someObject.wait(), otherThread.join(), Thread.sleep()时
