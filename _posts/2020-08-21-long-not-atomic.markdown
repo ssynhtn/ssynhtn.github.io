@@ -4,10 +4,6 @@ title:  "Long的读写不是原子操作"
 date:   2020-08-21 18:20:26 +0800
 categories: concurrency
 ---
-其实把自己学到的知识公开发布不是一件历史悠久的事情
-对99%的人来说，所谓写博客无非是一种抬高自己身价好把自己卖个好价钱的行为罢了，否则用自己的印象笔记之类的软件就够了
-
-
 jvm中不保证long/double的写操作是原子性操作：
 17.7. Non-atomic Treatment of double and long
 For the purposes of the Java programming language memory model, a single write to a non-volatile long or double value is treated as two separate writes: one to each 32-bit half. This can result in a situation where a thread sees the first 32 bits of a 64-bit value from one write, and the second 32 bits from another write.
@@ -22,6 +18,7 @@ Implementations of the Java Virtual Machine are encouraged to avoid splitting 64
 不过貌似没提到读的操作
 
 运行一下验证一下：
+
     public class UnsafeLong {
         long value;
         
