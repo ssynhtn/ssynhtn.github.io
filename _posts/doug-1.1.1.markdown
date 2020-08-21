@@ -48,9 +48,12 @@ Atomic actions are performed as units, without any interleaving of the actions o
 
 太多锁会造成活跃性问题
 三个基本的原则：
-    改动字段时要锁
-    获取字段也要锁？
-    调用其它对象的方法，不要锁
+    1，改动字段时要锁
+    2，获取字段也要锁？
+    3，调用其它对象的方法，不要锁 
+
+3的原因是在同步块中调用其它对象的方法可能会造成死锁，因为那个方法的内容不受我们控制  
+假设有两个锁A和B，方法foo中会获取锁A，接着去调用方法bar，而方法bar中会先获取锁B，接着去调用foo，那么两个线程一个调用foo,一个调用bar就会导致死锁。这种情况似乎发生的概率不高，不过在负载的软件系统中（比如各种callback）这中错误代码很可能出现
 
 These rules have many exceptions and refinements, but they provide enough guidance to write class Particle
 这些原则不是死的，但是基本上是好的
