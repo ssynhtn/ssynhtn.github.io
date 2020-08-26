@@ -12,7 +12,7 @@ categories: java
 结果竟然报错了
 对parseInt的代码仔细看了半天，发现是因为这个数超出int的表示范围了：
 
-    if (result < multmin) { // 这里multimin = 
+    if (result < multmin) {
         throw NumberFormatException.forInputString(s);
     }
 
