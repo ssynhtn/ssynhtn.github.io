@@ -20,3 +20,6 @@ categories: algorithm
 
         return n;
     }
+
+似乎是一个广为人知的算法：
+https://stackoverflow.com/a/365068/5637606
