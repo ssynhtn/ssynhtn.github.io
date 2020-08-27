@@ -10,7 +10,7 @@ categories: java
     transient Object[] elementData; // non-private to simplify nested class access
 
 有点奇怪，ArrayList是标记为Serializable的
-印象中transient只用来标记不重要的数据，准确说是序列化时不保存这个变量
+印象中transient只用来标记不重要的和无法序列化的数据，准确说是序列化时不保存这个变量
 也就是说在序列化的时候elementData是不被保存的
 
 看了一下是因为ArrayList自定义了序列化过程，因为elementData的长度是比ArrayList的真实size要大的，尾部的null没有必要保存
