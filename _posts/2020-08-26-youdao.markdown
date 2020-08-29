@@ -1,0 +1,16 @@
+---
+layout: post
+title:  "有道词典Chrome搜索失效"
+date:   2020-08-21 18:20:26 +0800
+categories: tricks
+---
+
+之前在Chrome中输入dict+Tab就会自动补充为有道词典的搜索, 这几天忽然失效了
+也许是有道词典的搜索链接改了，而Chrome可能不识别这种query放在路径中的格式：
+https://dict.youdao.com/w/test
+
+解决办法
+1， 在设置中找到搜索引擎: chrome://settings/searchEngines
+2, 选择添加搜索引擎
+3, 关键字填入dict.youdao.com， 网址格式填入https://dict.youdao.com/w/%s
+4， 保存即可～
