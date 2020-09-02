@@ -1,0 +1,17 @@
+---
+layout: post
+title:  "ClassNotFoundException和NoClassDefFoundError"
+date:   2020-09-02 18:21:26 +0800
+categories: java
+---
+
+
+ClassLoader的代理加载逻辑在loadClass方法中，其中包含了查找缓存，代理给父ClassLoader/引导类ClassLoader，自己加载三部分
+自己加载的部分的逻辑放到了findClass方法中，默认的实现是直接扔了一个ClassNotFoundException
+
+子类继承ClassLoader时需要覆盖findClass方法，在获取class文件的byte[]/ByteBuffer后调用defineClass获取Class<?>对象
+而这个defineClass最终会调用native版本的defineClass方法，当byte[]的内容保存的class的name和我们load的name不一致时，这个方法会抛出NoClassDefFoundError
+
+系统默认的ClassLoader是Launcher$AppClassLoader，它继承URLClassLoader，这个类的findClass方法里面会调用defineClass因此也会抛出NOClassDefFoundError
+
+另外Class.forName和ClassLoader.findSystemClass也会抛出ClassNotFoundException, 后者因为直接在系统ClassLoader中调用loadClass光是这一点就会抛出这个异常
