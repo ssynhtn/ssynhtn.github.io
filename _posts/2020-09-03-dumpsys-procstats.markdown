@@ -33,4 +33,69 @@ accounted in a way that the amount is divided evenly between the processes that 
 
 所以内存占用大小有如下规律：RSS >= PSS >= USS
 
-Android studio的memory profiler的时间线上显示的内存，理论上只能是USS或者RSS, 因为你不能显示半个object的占用啊，对比上面的数据，应该是USS, 确实没有必要显示共享库的对象
+Android studio的memory profiler的时间线上显示的内存，对比大小可能是USS或者PSS
+
+
+meminfo可以显示更多详细的数据，甚至还会获取View的个数ViewRootImple(窗口)的个数，打开的数据库的个数
+其中“All Dalvik and native heap allocations you make will be private dirty RAM”
+Java和native代码在堆中创建的对对象都属于私有脏内存
+
+adb shell dumpsys meminfo com.haodingdan.sixin [-d]
+
+>Applications Memory Usage (in Kilobytes):
+>Uptime: 5838138 Realtime: 5838138
+>
+>** MEMINFO in pid 8552 [com.haodingdan.sixin] **
+>                   Pss  Private  Private  SwapPss     Heap     Heap     Heap
+>                 Total    Dirty    Clean    Dirty     Size    Alloc     Free
+>                ------   ------   ------   ------   ------   ------   ------
+>  Native Heap    36767    36484        0        0    50852    48485     2366
+>  Dalvik Heap     7300     7004        0        0    13406     7278     6128
+> Dalvik Other     2431     2424        0        0                           
+>        Stack       84       84        0        0                           
+>       Cursor       48       48        0        0                           
+>       Ashmem       85        0        0        0                           
+>    Other dev       52        0       52        0                           
+>     .so mmap    14396      144     5832        0                           
+>    .jar mmap     3237        0      508        0                           
+>    .apk mmap    21201      124     6456        0                           
+>    .ttf mmap      283        0      100        0                           
+>    .dex mmap    18480    18112      268        0                           
+>    .oat mmap      445        0       64        0                           
+>    .art mmap     7049     6224       68        0                           
+>   Other mmap     4813      328     1336        1                           
+>      Unknown     2573     2560        0        1                           
+>        TOTAL   119246    73536    14684        2    64258    55763     8494
+> 
+> App Summary
+>                       Pss(KB)
+>                        ------
+>           Java Heap:    13296
+>         Native Heap:    36484
+>                Code:    31608
+>               Stack:       84
+>            Graphics:        0
+>       Private Other:     6748
+>              System:    31026
+> 
+>               TOTAL:   119246       TOTAL SWAP PSS:        2
+> 
+> Objects
+>               Views:      396         ViewRootImpl:        1
+>         AppContexts:        5           Activities:        1
+>              Assets:        4        AssetManagers:        0
+>       Local Binders:       77        Proxy Binders:       39
+>       Parcel memory:       22         Parcel count:       92
+>    Death Recipients:        2      OpenSSL Sockets:        1
+>            WebViews:        1
+> 
+> SQL
+>         MEMORY_USED:     1071
+>  PAGECACHE_OVERFLOW:      543          MALLOC_SIZE:      117
+> 
+> DATABASES
+>      pgsz     dbsz   Lookaside(b)          cache  Dbname
+>         4       76             98         9/39/7  /data/user/0/com.haodingdan.sixin/databases/androidx.work.workdb
+>         4       12                         0/0/0    (attached) temp
+>         4      528            109      416/43/23  /data/user/0/com.haodingdan.sixin/databases/user_357262.db
+>         4       20             37         1/16/2  /data/user/0/com.haodingdan.sixin/databases/accs.db
