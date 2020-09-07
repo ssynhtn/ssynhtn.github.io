@@ -5,8 +5,8 @@ date:   2020-09-07 18:21:26 +0800
 categories: android
 ---
 
-有一种面试题会问题Activity.onTouchEvent, View.onTouchEvent, OnTouchListener.onTouchEvent的调用顺序  
-TLDR: OnTouchListener.onTouchEvent > View.onTouchEvent > Activity.onTouchEvent
+有一种面试题会问题Activity.onTouchEvent, View.onTouchEvent, OnTouchListener.onTouch的调用顺序  
+太长不看: OnTouchListener.onTouch > View.onTouchEvent > Activity.onTouchEvent
 
 有一件事情我们可以看成是已知的: View和Activity中的事件是从ViewRootImpl这个类出发调用的  
 我需要从这个起点开始, 其它的太底层了
