@@ -55,7 +55,7 @@ ViewRootImpl对象持有DecorView mView对象
 
 换句话说, 如果我们不覆盖Activity的dispatch方法, 那么Activity.onTouchEvent的优先级是最低的
 
-View.onTouchEvent中处理顺序是这样的:  
+View.onDispatchTouchEvent中处理顺序是这样的:  
 
     ListenerInfo li = mListenerInfo;
     if (li != null && li.mOnTouchListener != null
@@ -68,7 +68,7 @@ View.onTouchEvent中处理顺序是这样的:
         result = true;
     }
 
-说明listenr的优先级更高, 这样处理的原因是当View的内部实现是不能更改的时候, 我们可以通过设置listener来覆盖view的默认行为
+说明listener的优先级更高, 这样处理的原因是当View的内部实现是不能更改的时候, 我们可以通过设置listener来覆盖view的默认行为
 
 
 另一个问题是View.OnClickListener是如何被触发的, 观看代码后会发现, 这里涉及的东西其实也不少, 但是最常出现的流程其实只有两步
