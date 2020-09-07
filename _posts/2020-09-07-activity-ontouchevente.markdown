@@ -143,4 +143,5 @@ focusTaken只有在当前View是可focusableInTouchMode并且当前状态为非f
   * Button: isFocusableInTouchMode为false -> focusTaken = false;
   * EditText: isFocusableInTouchMode为true, 如果当前不是焦点, 那么EditText一般会成功获取焦点, focusTaken = true, 否则如果已经是焦点, 那么focusTaken = false
 
-那么绝大多数情况下都会触发performClick, 只有类似于EditText, 加入给EditText设置一个OnClickListener的话, 第一次点击会获取焦点, 但是不触发点击事件, 第二次才会触发点击事件
+那么绝大多数情况下都会触发performClick  
+只有EditText不一样, 给EditText设置一个OnClickListener的话, 第一次点击会获取焦点, 但是不触发点击事件, 第二次才会触发点击事件
