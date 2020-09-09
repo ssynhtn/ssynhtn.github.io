@@ -105,6 +105,7 @@ fragment有5个状态
 ===吃午饭===
 
 moveToState方法中给fragment.mHost赋值的地方, 一个是从INITIALIZING切换到任何其它状态的时候:
+
     if (f.mState <= newState) {
         switch (f.mState) {
             case Fragment.INITIALIZING:
@@ -130,13 +131,13 @@ moveToState方法中给fragment.mHost赋值的地方, 一个是从INITIALIZING�
                                 }
                             }
 
-其中切换到INITIALIZING时, 如果keepActive, 暂时不会置空mHost, 貌似keepActive和动画有关, 在动画结束后
+其中切换到INITIALIZING时, 如果keepActive, 暂时不会置空mHost, 貌似keepActive和动画有关, 在动画结束后  
 会继续调用一个moveToState(fragment, fragment.getStateAfterAnimating(), 0, 0, false);
 
-所以除了INITIALIZING这个状态以外, Fragment.mHost对象都是有的
-如果查看对fragment进行操作的removeFragment和detachFragment这两个操作, 它们都会把fragment移除出FragmentManagerImpl.mAdded这个列表, 标记fragment.mAdded = false
-区别是, 在这个fragment transaction中接下来会调用moveFragmentToExpectedState方法, 它会调用moveToState方法, 
-对remove操作, newState传的是INITIALIZING, 对detach操作传的是fm.mState, 但是在moveToState方法内部又会检查f.mDetached, 如果是true, 那又设置newState为CREATED
+所以除了INITIALIZING这个状态以外, Fragment.mHost对象都是有的  
+如果查看对fragment进行操作的removeFragment和detachFragment这两个操作, 它们都会把fragment移除出FragmentManagerImpl.mAdded这个列表, 标记fragment.mAdded = false  
+区别是, 在这个fragment transaction中接下来会调用moveFragmentToExpectedState方法, 它会调用moveToState方法,   
+对remove操作, newState传的是INITIALIZING, 对detach操作传的是fm.mState, 但是在moveToState方法内部又会检查f.mDetached, 如果是true, 那又设置newState为CREATED  
 
 好乱啊
 
