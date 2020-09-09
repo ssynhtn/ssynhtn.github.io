@@ -135,6 +135,7 @@ moveToState方法中给fragment.mHost赋值的地方, 一个是从INITIALIZING�
 会继续调用一个moveToState(fragment, fragment.getStateAfterAnimating(), 0, 0, false);
 
 所以除了INITIALIZING这个状态以外, Fragment.mHost对象都是有的  
+
 如果查看对fragment进行操作的removeFragment和detachFragment这两个操作, 它们都会把fragment移除出FragmentManagerImpl.mAdded这个列表, 标记fragment.mAdded = false  
 区别是, 在这个fragment transaction中接下来会调用moveFragmentToExpectedState方法, 它会调用moveToState方法,   
 对remove操作, newState传的是INITIALIZING, 对detach操作传的是fm.mState, 但是在moveToState方法内部又会检查f.mDetached, 如果是true, 那又设置newState为CREATED  
@@ -143,9 +144,17 @@ moveToState方法中给fragment.mHost赋值的地方, 一个是从INITIALIZING�
 
 但结果是, remove会让fragment重新进入INITIALIZING状态, fragment会经历onPause/Stop/DestroyView/Destroy, detach会进入CREATED状态, 不会走Destroy这一步, 但是会走onDestroyView
 
-两个都是属于mAdded == false都情况
+两个都是属于mAdded == false的情况
 
-仔细看的话, Fragment.mAdded状态, 和fragment对象被加入fmimpl.mAdded这个list是一直保持一致的(但是remove的话还会从fmimpl.mActive这个map中移除, detach则不会)
+仔细看的话, Fragment.mAdded状态, 和fragment对象被加入fmimpl.mAdded这个list是一直保持一致的
+
+(但是remove的话还会从fmimpl.mActive这个map中移除, detach则不会, 这样在detach后findFragmentByTag方法还可以找到这个fragment, 所以这个detach可以认为是把fragment的view detach了)
+
+这个和FragmentTransaction的文档对detach的描述是一致的:
+
+>Detach the given fragment from the UI. This is the same state as when it is put on the back stack: the fragment is removed from the UI, however its state is still being actively managed by the fragment manager. When going into this state its view hierarchy is destroyed.
+
+
 
 那么基本的结论是, fragment的add/attach操作会让它进入added状态, 特点是fragment持有View对象  
-remove/detach会让它added状态失效, 但是detach的时候f仍然保持着mHost引用, remove就没有了  
+remove/detach会让它added状态失效, 但是detach的时候f仍然保持着mHost引用, view没了, remove就什么都没有了  
