@@ -56,7 +56,7 @@ mHost变量的写操作全部在FragmentManagerImpl中发起
     }
 
 其它4个是FragmentManagerImpl类中直接赋值, 3个是赋值为FragmentManagerImpl的mHost对象, 一个是赋值为null  
-而FragmentManagerImpl的mHost对象是在FragmentActivity的onCreate方法的第一行调用FragentController.attachHost获得
+而FragmentManagerImpl的mHost对象是在FragmentActivity的onCreate方法的第一行调用FragentController.attachHost获得  
 在FragmentActivity的onDestroy方法中通过FragmentController.dispatchDestroy来置空
 
 上面说的4个赋值地点  
@@ -64,8 +64,8 @@ mHost变量的写操作全部在FragmentManagerImpl中发起
 另外两个是在moveToState(Fragment f, int newState, int transit, int transitionStyle, boolean keepActive)
 
 FragmentManagerImpl类很神奇地实现了LayoutInflater.Factory2接口  
-这和Fragment可以在xml中直接由&lt;fragment&gt;标签中inflate出来有关
-inflate出来的fragment会直接设置mHost为manager的mHost, 鉴于一般情况inflate方法是由FragmentActivity的子类在onCreate中调用的, 因此这个时候FragmentManagerImpl.mHost已经有值了
+这和Fragment可以在xml中直接由&lt;fragment&gt;标签中inflate出来有关  
+inflate出来的fragment会直接设置mHost为manager的mHost, 鉴于一般情况inflate方法是由FragmentActivity的子类在onCreate中调用的, 因此这个时候FragmentManagerImpl.mHost已经有值了  
 这种情况暂时不是很感兴趣
 
 moveToState方法会改变fragment当前的状态mState  
@@ -77,7 +77,7 @@ fragment有5个状态
     static final int STARTED = 3;          // Created and started, not resumed.
     static final int RESUMED = 4;          // Created started and resumed.
 
-其中刚刚被new出来的时候状态是INITIALIZING, 这个名称看上去像是“正在初始化”, 但是这个名字其实好像不是很贴切
+其中刚刚被new出来的时候状态是INITIALIZING, 这个名称看上去像是“正在初始化”, 但是这个名字其实好像不是很贴切  
 比如说, 我们知道Java中每个new出来的对象是有一个初始化过程的, 但是初始化结束就结束了, 没有逆初始化或者重新初始化之类的过程  
 但是这个mState在Fragment的方法中, 是可以在INITIALIZING和RESUMED之间来回变动的  
 比如如果activity保持fragment对象的引用, 那么它可以在移除fragment后再添加fragment, 这样这个fragment就会在onDestroy后再次onCreate  
