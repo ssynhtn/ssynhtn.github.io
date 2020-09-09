@@ -82,7 +82,7 @@ fragment有5个状态
 但是这个mState在Fragment的方法中, 是可以在INITIALIZING和RESUMED之间来回变动的  
 比如如果activity保持fragment对象的引用, 那么它可以在移除fragment后再添加fragment, 这样这个fragment就会在onDestroy后再次onCreate  
 至于这种做法是否被推荐, 我猜测不是的, fragment作为activity的instance state的一部分, 在activity的旋转, 从后台恢复的过程中都会经历重新创建的过程  
-如果偷看一下FragmentPagerAdapter的代码, 会发现fragment是通过detach来移除,  在添加的时候会首先通过findFragmentByTag来查找
+如果偷看一下FragmentPagerAdapter的代码, 会发现fragment是通过detach来移除,  在添加的时候则会首先通过findFragmentByTag来查找. 
 
     performCreate(Bundle)
             mState = CREATED;
