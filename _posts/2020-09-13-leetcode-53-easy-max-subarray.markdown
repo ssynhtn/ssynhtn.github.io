@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "leetcode 51 N皇后问题"
+title:  "leetcode 53 求连续元素之和最大值"
 date:   2020-09-13 18:24:26 +0800
 categories: leetcode
 ---
