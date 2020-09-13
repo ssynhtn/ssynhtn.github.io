@@ -7,6 +7,8 @@ categories: leetcode
 
 link: https://leetcode.com/problems/permutations-ii/
 
+需求: 给定n个数(可能相同), 输出这n个数的所有排列, 相同的排列只输出一次
+
 solution: 
 
     class Permutations {

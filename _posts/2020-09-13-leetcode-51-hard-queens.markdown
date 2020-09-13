@@ -7,6 +7,8 @@ categories: leetcode
 
 link: https://leetcode.com/problems/n-queens/
 
+问题描述: 著名问题
+
 solution: 
 
     class NQueens {

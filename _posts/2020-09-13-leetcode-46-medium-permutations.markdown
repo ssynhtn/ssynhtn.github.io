@@ -7,6 +7,8 @@ categories: leetcode
 
 link: https://leetcode.com/problems/permutations/
 
+需求: 给定n个不同的数, 输出这n个数的所有排列
+
 solution: 
 
     class Permutations {
