@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "final != const"
+title:  "在final字段初始化之前访问它会怎么样"
 date:   2020-08-21 18:20:27 +0800
 categories: concurrency
 ---

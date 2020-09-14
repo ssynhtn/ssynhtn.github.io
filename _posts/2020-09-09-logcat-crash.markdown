@@ -5,7 +5,7 @@ date:   2020-09-09 18:21:26 +0800
 categories: adb
 ---
 
-出于各种原因, 有的时候app崩溃的时候, logcat里的崩溃日志会找不到
+出于各种原因, 有的时候app崩溃的时候, android studio中的logcat里的崩溃日志会找不到
 
 可以使用adb查看崩溃信息
 

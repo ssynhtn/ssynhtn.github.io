@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Object.wait, Object.notify"
+title:  "wait和notify方法"
 date:   2020-08-13 18:20:25 +0800
 categories: android
 ---

@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Dining philosopher"
+title:  "哲学家就餐问题"
 date:   2020-08-15 18:20:26 +0800
 categories: concurrency
 ---

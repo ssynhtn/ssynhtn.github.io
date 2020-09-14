@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Equals"
+title:  "a == a 是否一定是true?"
 date:   2020-07-20 22:10:25 +0800
 categories: jekyll update
 ---

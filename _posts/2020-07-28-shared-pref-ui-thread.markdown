@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Does SharedPreferences load data in the UI thread"
+title:  "SharedPreferences初始化是否会阻塞UI线程"
 date:   2020-07-28 22:10:26 +0800
 categories: android
 ---

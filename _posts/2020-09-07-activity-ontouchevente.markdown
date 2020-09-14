@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Activity.onTouchEvent的调用顺序"
+title:  "Activity.onTouchEvent等方法的调用顺序"
 date:   2020-09-07 18:21:26 +0800
 categories: android
 ---
