@@ -34,6 +34,12 @@ accounted in a way that the amount is divided evenly between the processes that 
 所以内存占用大小有如下规律：RSS >= PSS >= USS
 
 Android studio的memory profiler的时间线上显示的内存，对比大小可能是USS或者PSS
+根据文档: https://developer.android.com/studio/profile/memory-profiler?hl=en#how-counted
+应该是只包含app独占的内存, 因此应该是USS
+
+>The numbers you see at the top of the Memory >Profiler (figure 2) are based on all the private >memory pages that your app has committed, according >to the Android system. This count does not include >pages shared with the system or other apps.
+
+
 
 
 meminfo可以显示更多详细的数据，甚至还会获取View的个数ViewRootImple(窗口)的个数，打开的数据库的个数
