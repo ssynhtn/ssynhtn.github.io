@@ -1,11 +1,11 @@
 ---
 layout: post
-title:  "github添加ssh"
+title:  "github添加ssh key"
 date:   2020-09-16 18:24:26 +0800
 categories: bash
 ---
 
-1， 生成rsa pair, 至于rsa密钥是啥， 嗯其实不是很清楚
+1， 生成rsa pair
 
     ssh-keygen -t rsa
 
