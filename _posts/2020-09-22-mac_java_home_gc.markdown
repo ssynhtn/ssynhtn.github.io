@@ -43,3 +43,7 @@ categories: bash
 
 测试了一下java15使用的也是G1
 jdk8使用的是Parallel GC 
+
+
+一个jvm参数设置辅助工具, 貌似做后端的人经常搞这种东西?  
+[http://jvmmemory.com/](http://jvmmemory.com/)
