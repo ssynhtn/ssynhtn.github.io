@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "nix快速切换Java Home"
+title:  "nix快速切换Java Home, 查看jvm使用的gc版本"
 date:   2020-09-22 18:24:26 +0800
 categories: bash
 ---
@@ -22,7 +22,7 @@ categories: bash
     /Library/Java/JavaVirtualMachines/jdk-15.jdk/Contents/Home
 
 
-快速切换JAVA_HOME
+快速切换JAVA_HOME  
 在~/.bash_profile中添加
 
     alias useJava15="export JAVA_HOME=`/usr/libexec/java_home -v 15`"
@@ -31,7 +31,7 @@ categories: bash
     useJava11
 
 
-打印jvm使用道垃圾回收算法
+打印jvm使用的垃圾回收算法
 
     java -XX:+PrintCommandLineFlags -version
     -XX:G1ConcRefinementThreads=10 -XX:GCDrainStackTargetSize=64 -XX:InitialHeapSize=268435456 -XX:MaxHeapSize=4294967296 -XX:+PrintCommandLineFlags -XX:ReservedCodeCacheSize=251658240 -XX:+SegmentedCodeCache -XX:+UseCompressedClassPointers -XX:+UseCompressedOops -XX:+UseG1GC 
