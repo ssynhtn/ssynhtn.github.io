@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "一个Java类最多可以有多少个(用到的)成员变量"
+title:  "无用知识: 一个Java类最多可以有多少个(用到的)成员变量"
 date:   2020-09-23 18:24:26 +0800
 categories: jvm
 ---
