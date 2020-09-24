@@ -59,17 +59,25 @@ Android中, 单个dex文件有一个65536个方法数的限制: [https://develop
     echo "public class $1 {" >> $filename
     for ((i = 0; i < $2; i++))
     do
-      echo "int a$i = $i;" >> $filename
+      echo "int a$i = 1;" >> $filename
     done
     echo "}" >> $filename
 
 然后编译这个java文件  
-在手动二分查找(=,-)之后发现这样的a成员变量最多是9380个, 9381个的时候就报“代码过长”错误了
+在手动二分查找(=,-)之后发现这样的a成员变量最多是13106个, 13107个的时候就报“代码过长”错误了
 
-对9380个ivar的这个class文件使用javap进行反汇编后发现它实际上有28153个常量
+对13106个ivar的这个class文件使用javap进行反汇编后发现它实际上有39331个常量
 
-    ...
-    #28153 = Utf8               java/lang/Object
-    ...
+    grep "#\d* =" large_13106.javap | tail
+    #39322 = NameAndType        #26209:#13111 // a13098:I
+    #39323 = NameAndType        #26210:#13111 // a13099:I
+    #39324 = NameAndType        #26211:#13111 // a13100:I
+    #39325 = NameAndType        #26212:#13111 // a13101:I
+    #39326 = NameAndType        #26213:#13111 // a13102:I
+    #39327 = NameAndType        #26214:#13111 // a13103:I
+    #39328 = NameAndType        #26215:#13111 // a13104:I
+    #39329 = NameAndType        #26216:#13111 // a13105:I
+    #39330 = Utf8               Large
+    #39331 = Utf8               java/lang/Object
 
 所以应该是有别的限制
