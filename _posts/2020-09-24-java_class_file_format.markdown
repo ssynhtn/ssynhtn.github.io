@@ -37,9 +37,9 @@ list of method info:
   method descriptor index u2
   method attributes count u2
   method attributes:
-    attribute name index u2
-    attribute data length u4
-    attribute data
+    attribute name index u2 // 比如指向Code
+    attribute data length u4  // 如果name为Code, 这里记录的长度是指令长度
+    attribute data  // 如果name是Code, 这里是实际指令
 attributes count u2
   attribute name index u2
   attribute data length u4
