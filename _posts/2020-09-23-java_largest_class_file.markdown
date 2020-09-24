@@ -13,7 +13,7 @@ Android中, 单个dex文件有一个65536个方法数的限制: [https://develop
 
 这个常量池其实和我第一直觉上理解的"常量池“不太一样. 从字面意义上, 我会觉得类似于"hello"这样的字面值常量会保存在里面, 事实上也是这样的. 但是除此之外, 类的名称, 字段/方法的名称, 字段的类型/方法的签名的全都保存在这个常量池当中
 
-一开始我觉得挺奇怪的, 为什么class文件会保留字段的具体名称, 既然计算机只认识0和1, 显然没有必要保留名称, 不过想了下这样做是必须的, class文件如果要编译成本地代码在硬件上运行, 其实还需要经过一个link阶段, 在link之前不同的class文件之间的方法调用和字段访问都应该用名称
+一开始我觉得挺奇怪的, 为什么class文件会保留字段的具体名称, 既然计算机只认识0和1, 显然没有必要保留名称, 不过想了下这样做是必须的, class文件是相互独立的, class文件如果要编译成本地代码在硬件上运行, 其实还需要经过一个link阶段, 在link之前不同的class文件之间的方法调用和字段访问都应该用名称
 
 举个例子, 假如说class A依赖于jdk中的class B, 那么当我们更新jdk的时候, 如果class B中新增了方法, 如果对B的方法的调用是用一个id或index来标记的, 没有办法保证B中的方法的id/index是保持稳定的, 只有名称/方法签名是稳定的
 
@@ -26,7 +26,7 @@ Android中, 单个dex文件有一个65536个方法数的限制: [https://develop
     }
 
     javac Large0.java
-    javap -c -p Large0.class
+    javap -v Large0.class
 
 它的类文件中, 常量池的部分为:
 
@@ -48,7 +48,8 @@ Android中, 单个dex文件有一个65536个方法数的限制: [https://develop
     #15 = Utf8               Large0
     #16 = Utf8               java/lang/Object
 
-其中字段a0保存在index=2的FieldRef类型, FieldRef类型占用5个byte, 第一个byte注明该常量的类型为字段引用(9), 后面跟着两个各自占用2个byte的index, 指向字段所在的类和字段的NameAndType这两个常量(#3, #14), 其中NameAndType类型的常量又指向两个UTF8类型的常量(#4, #6)
+其中字段a0保存在index=2的FieldRef类型, FieldRef类型占用5个byte, 第一个byte注明该常量的类型为字段引用(9), 后面跟着两个各自占用2个byte的index, 指向字段所在的类和字段的NameAndType这两个常量(#3, #14), 其中NameAndType类型的常量又指向两个UTF8类型的常量(#5, #6)  
+其次在
 
 所以一个int a0 = 1;这样的申明, 会带来: 一个fieldRef, 一个Class(共享), 一个NameAndType, 一个记录name的UTF8, 一个记录type(共享)的UTF8
 这样它独占的的常量就有3个
