@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "nix快速切换Java Home, 查看jvm使用的gc版本"
+title:  "mac快速切换Java Home, 查看jvm使用的gc版本"
 date:   2020-09-22 18:24:26 +0800
 categories: bash
 ---
