@@ -90,7 +90,7 @@ Q:
   * 新版的这样做会保证traversal会更快地执行吗?   
     不一定啊, 老的方法直接把runnable发送到了mq中, 而新方法需要等待onVsync
   * 老版本方法反而更快吗?  
-    也不是啊, 新版的send的message是async的, 所以一旦onVsync被调用, 它会优先于mq中所有其它由你的垃圾代码和你引用的垃圾第三方库send的消息
+    也不是啊, 新版的send的message是async的, 所以一旦onVsync被调用, 它就会插队, 因此优先于于mq中所有其它由你的垃圾代码和你引用的垃圾第三方库send的消息. (貌似底层vsync的频率是16ms一次, onVsync的调用频率似乎不是直接一一对应的, 而是被choreographer调用的scheduleVsync控制的?)
   * 老版本处理方式的问题在哪里?  
     View的traversal没有优先处理权, 一个requestLayout请求可能需要等很多其它的message处理完成才能轮到它
   * 新版处理方式能保证UI的60fps渲染吗?
@@ -99,6 +99,7 @@ Q:
 
 再来看下一个问题, Choreographer什么时候会在logcat中提醒掉帧  
 Choreographer中的FrameDisplayEventReceiver在onVsync的时候会记录当时的时间:
+
     public void onVsync(long timestampNanos, int builtInDisplayId, int frame) {
         ...
         mTimestampNanos = timestampNanos;
@@ -128,7 +129,7 @@ Choreographer中的FrameDisplayEventReceiver在onVsync的时候会记录当时�
         ...
     }
 
-可以看到所谓jitterNanos就是现在时间减去上一个onVsync的时间, 如果主线程中最后在执行的message耗时过长, 那么这个jitterNanos就会超过16ms  
+可以看到所谓jitterNanos就是现在时间减去上一个onVsync是记录的时间, 如果主线程中在执行上一个message耗时过长, 那么这个jitterNanos就会超过16ms  
 而skippedFrames就是超时的时间除以16ms
 
 最后一个问题, 如果在onCreate中post一个Runnable, 那么在这个Runnable中能否获取View的高度?  
