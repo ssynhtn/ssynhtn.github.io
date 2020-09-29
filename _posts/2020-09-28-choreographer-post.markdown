@@ -144,14 +144,27 @@ Choreographer中的FrameDisplayEventReceiver在onVsync的时候会记录当时�
     ViewRootImpl.setView
     ViewRootImpl.requestLayout
 
-换句话说, 第一次ViewRootImpl.postSyncBarrier发生在我们自己post的Runnable之后, 那么Runnable会先于traversal的执行, 因此无法获取View的高度
+换句话说, 第一次ViewRootImpl.postSyncBarrier发生在我们自己在onCreate中post的Runnable之后, mq的内容会如下
+
+    onCreate中post的runnable
+    syncBarrier
+    traversal
+
+那么traversal即使能让async的msg插队, 也是插在sync barrier的位置, 还是晚于Runnable, 因此Runnable运行时layout尚未执行, 因此无法获取View的高度
 
 实际运行了一下, 发现确实是这样的  
 再运行一下...发现竟然不是的!?...😺  
-竟然是有时候能获取, 有时候不能获取???
+多运行几次竟然是有时候能获取, 有时候不能获取???
 
 通过多次运行, 结合getMainLooper().dump(), 以及在打印ViewRootImpl的mTraversalBarrier的数值, 对比后发现:  
-如果Activity A启动Activity B的时候, B的onCreate执行的时候, A post的一个syncBarrier可能还没执行, 这样在A的syncBarrier为mq的头的时候, B的第一个traversal因为是async的, 会优先于我们在B的onCreate中post的runnable执行
+如果Activity A启动Activity B的时候, B的onCreate执行的时候, A post的一个syncBarrier还没执行掉, 这样在B的scheduleTraversal&&onVsync调用后, mq的内容会包括这些:
+
+    A syncBarrier
+    我们B.onCreate中post的runnable
+    B syncBarrier
+    B traversal
+
+当looper发现在A的syncBarrier为mq的第一个msg的时候, B的第一个traversal因为是async的, 会优先于我们在B的onCreate中post的runnable执行
 
 当然如果我们在post的runnable中再post一个runnable, 那它是晚于当前activity的scheduleTraversal中post的sync barrier, 因此是晚于layout的执行的
 
