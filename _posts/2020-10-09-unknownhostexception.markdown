@@ -22,7 +22,7 @@ UnknownHostException是什么呢, 它的文档说:
     URLConnection conn = url.openConnection();
     InputStream in = conn.getInputStream();
 
-这个错误的发生路径是:
+这个错误的发生的其中一个路径是(在System.getSeurityManager()有值的情况下):
 
     URLConnection.getInputStream()
     URLConnection.URLtoSocketPermission(URL)
@@ -30,6 +30,20 @@ UnknownHostException是什么呢, 它的文档说:
     InetAddress.getByName(String host)
     ...一堆内部impl调用
     native Inet6AddressImpl.lookupAllHostAddr(String host) // 如果机器支持ipv6的话
+
+如果sm为null的话
+
+    URLConnection.getInputStream()
+    URLConnection.getInputStream0()
+    URLConnection.connect()
+    plainConnect
+    plainConnect0
+    getNewHttpClient
+    new HttpClient()
+    HttpClient.openServer
+    NetworkClient.doConnect
+    new InetSocketAddress
+    InetAddress.getByName
 
 native部分的代码在Inet6AddressImpl.c的Java_java_net_Inet6AddressImpl_lookupAllHostAddr函数中, 略过其中不知道在干什么的c层的东西, 它最主要做的是:
 
