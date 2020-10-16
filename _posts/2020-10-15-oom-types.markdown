@@ -1,0 +1,176 @@
+---
+layout: post
+title:  "OOM有哪些种类"
+date:   2020-10-10 18:24:26 +0800
+categories: java
+---
+
+jvm的内存分为
+  * 堆内存
+  * 虚拟机栈, 本地方法栈
+  * 方法区
+  * 程序计数器
+
+其中前三个都可以发生内存溢出
+
+堆内存: 不停地创建对象就会导致内存不足
+代码
+
+    public static void main(String[] args) {
+        List<HeapOOM> data = new ArrayList<>();
+        int count = 0;
+        while (true) {
+            try {
+                data.add(new HeapOOM());
+                count++;
+            } catch (OutOfMemoryError e) {
+                throw new RuntimeException("created " + count + " objects", e);
+            }
+        }
+    }
+
+    java -Xmx10m com.ssynhtn.jvm.HeapOOM
+
+output:
+
+    Exception in thread "main" java.lang.RuntimeException: created 360145 objects
+	at com.ssynhtn.jvm.HeapOOM.main(HeapOOM.java:15)
+    Caused by: java.lang.OutOfMemoryError: Java heap space
+	at java.util.Arrays.copyOf(Arrays.java:3210)
+
+
+虚拟机栈: 一个虚拟机栈对应一个java线程, 因此不停创建线程就会导致内存不足
+
+    public static void main(String[] args) {
+        long count = 0;
+        while (true) {
+            try {
+                Thread t = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            Thread.sleep(1000000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+                t.setDaemon(true);
+                t.start();
+                count++;
+            } catch (OutOfMemoryError e) {
+                throw new RuntimeException("created " + count + " threads", e);
+            }
+        }
+    }
+
+    java -Xss100m com.ssynhtn.jvm.ThreadOOM
+
+    [0.840s][warning][os,thread] Failed to start thread - pthread_create failed (EAGAIN) for attributes: stacksize: 1024k, guardsize: 4k, detached.
+    Exception in thread "main" java.lang.RuntimeException: created 4076 threads
+      at com.ssynhtn.jvm.ThreadOOM.main(ThreadOOM.java:55)
+    Caused by: java.lang.OutOfMemoryError: unable to create native thread: possibly out of memory or process/resource limits reached
+      at java.base/java.lang.Thread.start0(Native Method)
+      at java.base/java.lang.Thread.start(Thread.java:803)
+      at com.ssynhtn.jvm.ThreadOOM.main(ThreadOOM.java:52)
+    
+
+实际运行中, 发现不管栈的大小参数Xss设置成多少, 在我的机器上都是4000+个线程的时候溢出  
+而且如果在monitor中查看java进程占用的内存, 发现也就是几十m  
+据jvm相关书籍所介绍, hotspot虚拟机中的栈是固定长度的而非动态扩容的, 这似乎可以认为每个线程都会预先分配了固定大小的内存  
+但是实际经过我测试, 只有在给每个线程进行很深的调用栈, java进程的内存占用才会极大地提升 
+而这个时候因为机器是64位的, 很难达到系统进程的内存限制, 会因为内存使用量太大而开始使用虚拟内存/swap, 整个机器就卡得要死  
+所以虽然栈的大小是固定的, 但是具体实现并不是一开始就分配了内存的, 即使每个线程都调用得很深, 在有虚拟内存的情况很难造成oom  
+mac上禁用swap现在貌似需要进recovery模式才可以了, 所以我就暂时不去尝试了...  
+所以上面的4000+个线程的时候崩溃, 实际上是线程数量达到了系统规定的上限(目测是4096)
+
+在Android中是没有虚拟内存的, 在Android上尝试, 结果是:  
+
+    java.lang.RuntimeException: created 1305 threads
+        at com.ssynhtn.hello.activity.OOMActivity.triggerOOMThreads(OOMActivity.java:63)
+        at com.ssynhtn.hello.activity.OOMActivity.access$000(OOMActivity.java:18)
+        at com.ssynhtn.hello.activity.OOMActivity$1$1.run(OOMActivity.java:36)
+        at java.lang.Thread.run(Thread.java:761)
+     Caused by: java.lang.OutOfMemoryError: Could not allocate JNI Env
+        at java.lang.Thread.nativeCreate(Native Method)
+        at java.lang.Thread.start(Thread.java:730)
+        at com.ssynhtn.hello.activity.OOMActivity.triggerOOMThreads(OOMActivity.java:59)
+
+Android上也是创建线程不消耗太多内存, 但是如果预先new一个int来占用内存的话, 在logcat中会有大量gc相关的log, 似乎系统一筹莫展的样子但是却又偏偏不崩溃, 只有在点击返回的情况下会无情地anr
+
+方法区:
+运行时加载的类是保存在方法区的, 所以通过不停加载新的类就可以导致oom  
+一种方法是使用动态代理动态创建新的类, 不过动态代理不是每次都会新加载类, 它是会缓存已经生成的类的. 不过通过组合不同的接口, 可以生成不同的类
+
+    public static void main(String[] args) {
+        InvocationHandler handler = new InvocationHandler() {
+            @Override
+            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                return null;
+            }
+        };
+        List<Object> runnables = new ArrayList<>();
+        Class<?>[] all = {
+                Able0.class,
+                Able1.class,
+                Able2.class,
+                Able3.class,
+                Able4.class,
+                Able5.class,
+                Able6.class,
+                Able7.class,
+                Able8.class,
+                Able9.class,
+                Able10.class,
+                Able11.class,
+                Able12.class,
+                Able13.class,
+                Able14.class,
+                Able15.class,
+                Able16.class,
+                Able17.class,
+                Able18.class,
+                Able19.class,
+                Able20.class,
+                Able21.class,
+                Able22.class,
+                Able23.class,
+                Able24.class,
+                Able25.class,
+                Able26.class,
+                Able27.class,
+                Able28.class,
+                Able29.class,
+        };
+        List<Class<?>> prefix = new ArrayList<>();
+        collect(runnables, all, 0, prefix, handler);
+
+    }
+
+    private static void collect(List<Object> runnables, Class<?>[] all, int i, List<Class<?>> prefix, InvocationHandler handler) {
+        if (i == all.length) {
+            try {
+                runnables.add(Proxy.newProxyInstance(MethodAreaOOM.class.getClassLoader(),
+                        prefix.toArray(new Class[prefix.size()]), handler));
+
+                if (runnables.size() % 100 == 0) {
+                    System.out.println("created " + runnables.size() + " proxies so far");
+                }
+            } catch (OutOfMemoryError e) {
+                throw new RuntimeException("generateed classes so far " + runnables.size(), e);
+            }
+            return;
+        }
+
+        prefix.add(all[i]);
+        collect(runnables, all, i + 1, prefix, handler);
+        prefix.remove(prefix.size() - 1);
+        collect(runnables, all, i + 1, prefix, handler);
+    }
+
+    java -XX:MaxMetaspaceSize=10M com.ssynhtn.jvm.MethodAreaOOM
+
+    java.lang.OutOfMemoryError: Metaspace
+
+方法区的常量池在Java7开始就放到heap中了, 因此它溢出和heap的溢出没区别
+
