@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "一种错误的bfs实现方式"
+title:  "一种错误(低效)的bfs实现方式"
 date:   2020-10-20 18:24:26 +0800
 categories: algorithm
 ---

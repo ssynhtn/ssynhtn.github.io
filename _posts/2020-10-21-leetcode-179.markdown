@@ -1,0 +1,28 @@
+---
+layout: post
+title:  "leetcode 179 Largest Number"
+date:   2020-10-21 18:24:26 +0800
+categories: algorithm
+---
+
+今天碰到了以前在面试的时候碰到的一道题:  
+https://leetcode.com/problems/largest-number/
+
+题目是, 把n个非负整数进行一个排序, 使得将它们连起来得到的一个大整数的值最大
+
+当时这个题我想了30分钟没有想出来, 直到面试结束后才想到要点
+
+一开始我在想, 是否如果x, y两个数字, 在字典序上 x < y, 那么就应该y排在x前面
+
+    比如 "35" < "42", 而 4235 > 3542
+
+但是这个对于长度不同的两个数是不成立的:  
+
+    "5" < "59", 595 > 559  
+    "5" < "51", 515 < 551
+
+最后我才想到, 原来 def comp(x, y) = strcmp(strcat(x, y), strcat(y, x)) 就可以形成一个定义在非负整数上的一个具有传递性的偏序  
+如果猜到了这一步, 证明这个偏序并不难, 它最终会化为比较x/(10^len(x) - 1)这个属性, 具体这里有人发了一个证明
+[https://leetcode.com/problems/largest-number/discuss/291988/A-Proof-of-the-Concatenation-Comparator's-Transtivity](https://leetcode.com/problems/largest-number/discuss/291988/A-Proof-of-the-Concatenation-Comparator's-Transtivity)
+
+在定义了这个偏序之后, 不难证明, 要想获得最大的数, 那么整个数组必须按照整个偏序排序, 因为如果有违背整个序的两个数, 那么必定有违背这个序的相邻的两个数, 那么交换这两个数就能获得更大的数, 这就矛盾了
