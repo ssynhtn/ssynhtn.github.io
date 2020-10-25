@@ -84,7 +84,7 @@ Complete code(which finished in 1ms in leetcode):
 
 Time space analysis:
 
-space: we need space to store highs and lows, worst case is every number is either a high or a low, for example [5,6,3,4,1,2], so worst case O(N), if we use ArrayLists to store highs and highs, best case can be O(1)
+space: we need space to store highs and lows, worst case is every number is either a high or a low, for example [5,6,3,4,1,2], so worst case O(N), if we use ArrayLists to store highs and lows, best case can be O(1)
 
 time: to scan from left to right we need O(N) time in the worst case, however in some cases, we also need to compare t with exisiting intervals, the number of comparisons done is the same as the number of intervals discarded(replaced by the superseding interval (x, t)), and int the whole process we can discard at most N/2 intervals, so total time is also worst case O(N). Similar to space, best case is O(1)
 
