@@ -62,10 +62,10 @@ we prove with 2 parts
 2, for x in HEAP, d[x] <= partial dist(s, x).  
 after we pull out x from HEAP and add it to FOUND, examine y in HEAP:  
 denote a~b be a shortest path from a to b in FOUND, and let right arrow -> denote a direct edge between any two nodes，
-let u be the predecessor of y, then the part of the path from s to u has to be the shortest path，
-and when u was added to FOUND, d[y] was updated to be <= d[u] + len(u,y) = partial dist(s, y), and it would not ever increase to a larger value
+in the partial shortest path from s to y, let u be the predecessor of y, then the part of the path from s to u must be the shortest path of s~u，so partial dist(s, y) = d[u] + len(u,y)  
+When u was added to FOUND, d[y] was updated to be <= d[u] + len(u,y) = partial dist(s, y), and d[y] would not ever increase to a larger value, so d[y] <= partial dist(s, y) maintains
 
 
 claim 3：
 when we pull out x from HEAP, we claim that the partial shortest path from s to x is the shortest path in the whole graph  
-or else by claim 1，the shortest path，has to go through some node y in HEAP first，and the partial shortest path to y is no smaller than that of x because x is the min node of the HEAP
+By claim 1，the shortest path，has to go through some node y in HEAP first，and the partial shortest path to y is no smaller than that of x because x is the min node of the HEAP, adding some potential additional distance from y to x if y is not x, the total length of path is no smaller than the partial shortest path from s to x
