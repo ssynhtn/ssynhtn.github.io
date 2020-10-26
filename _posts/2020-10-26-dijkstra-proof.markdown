@@ -1,0 +1,73 @@
+---
+layout: post
+title:  "Properties of Dijkstra's Algorithm"
+date:   2020-10-26 18:24:26 +0800
+categories: algorithm
+---
+
+If you look around the internet, or peek at books on introductory algorithms, trying to find a proof of dijkstra's algorithm, you'll probably find something like this:  
+[https://math.stackexchange.com/questions/835871/dijkstra-algorithm-proof](https://math.stackexchange.com/questions/835871/dijkstra-algorithm-proof)
+
+![Dijkstra proof?]({{ "/assets/dijkstra-proof.png" | absolute_url }})
+
+However this proof is too succinct, in that it does not capture the gist of the values we update for each nodes in every loop. In its raw shape, it is also based an implementation that keeps all unvisited nodes in a large heap, which begs the question why the most common min-heap based implementation is correct  
+
+I'll base my proof on the heap based implementation
+
+suppose we have a graph G(V, E), with nonnegative edge length, starting from s in V, we want to find the distance(shortest path) from s to any node in V
+
+we'll maintain two data structures:  
+a set of nodes whose distance from s has been found, call it FOUND  
+a min-heap, call it HEAP, of nodes that are at the frontier of our search, the value associated with nodes in this heap is the "temporary distance", we denote it by d[x] for node x, which we will prove to be the distance of a partial graph  
+for convinience we'll call the set of nodes not in FOUND/HEAP OTHERS 
+
+the algorithm is follows:  
+  * create empty set FOUND, and min heap HEAP
+  * add s to HEAP, with d[s] := 0
+  * while s is not empty, pull min value x out of it, add x to FOUND, and for 
+  each of x's neighbor, let's say y, 
+    * if y is in OTHERS, add y to HEAP with value d[y] = d[x] + len(x,y)
+    * if y is in HEAP and if d[x] + len(x,y) < d[y], then update d[y] to this smaller value
+
+
+
+we'll prove 3 invariants that are rather intuitive once they are spilled out
+
+claim: before each iteration of the while loop, we maintain:  
+  1. frontier property: for any node x in FOUND, and any node y not in FOUND, any path(with no loop) from x to y has to go through some node in HEAP
+  2. partial shortest path property: for each node x in HEAP, the value d[x] associated with x is length the shortest path from s to x, that only passes through nodes in FOUND
+  3, shortest path property: when node x is put into FOUND, the value d[x] is the distance from s to x
+
+we'll prove them of course by induction, on iterations of the while loop
+
+base case: 
+claim 1: FOUND is empty so this is automatically true
+HEAP is made up of single node s, and every path from s to s has to go through 0 nodes in FOUND, then s(a node in HEAP)
+
+claim 2: only node in HEAP is s, d[s] = 0 is the length of shortest path, since we require every edge to have nonnegative length
+
+claim 3: we remove s and add it to FOUND with d[s] = 0
+
+introductory step:
+
+claim 1: suppose after we pull out x from HEAP and add it to FOUND, there exists some path from u in FOUND to v in OTHERS that does not go pass HEAP, WLOG suppose u~v has the smallest # of edges  
+if u is not x, it was previously in FOUND, then u~v has to go pass some node y in HEAP, if y is not x, then y is still in HEAP, contradiction  
+if y is x, then x~v has smaller # of edges, x is now in FOUND, contradiction 
+so u has to be x, consider the next node in path x~v, call it next  
+if it were in FOUND, then it still is, and next~v is a smaller path. if it were not in FOUND, then it was either in HEAP, or is added to HEAP after the operation, both are contradictions.
+
+claim 2:  
+This part is actually similar to the original proof  
+we prove with 2 parts  
+1, for x in HEAP, d[x] >= partial dist(s, x). this is trivial since d[x] has always been the length of some partial path
+2, for x in HEAP, d[x] <= partial dist(s, x).
+after we pull out x from HEAP and add it to FOUND, examine y in HEAP:  denote a~b be a shortest path from a to b in FOUND, and let right arrow -> denote a direct edge between any two nodes, there are 3 possible cases of the partial shortest path from s to y 
+  * first to x, then directly to y: s~x->y  
+  partial dist(s, y) = dist(s, x) + len(x,y) = d[x] + len(x,y)
+  then in the operation on x's neighbors, d[y] is updated to be <= d[x] + len(x,y), so d[y] <= partial dist(s, y)
+  * pass through x, then indirectly to y: s~x~u->y where u is a node in FOUND, since dist(s,u) <= len(s~x~u), when u was add to FOUND, d[y] was update to be <= dist(s,u) + len(u,y) <= len(s~x~u) + len(u,y) = partial dist(s, y)
+  * does not go through x: s~u->y, when u was added to FOUND, d[y] was updated to be <= d[u] + len(u,y) = partial dist(s, y), and it would not ever increase to a larger value
+
+
+when we pull out x from HEAP, by claim 1, any path p from s to x has to go through nodes in FOUND and then a node in HEAP, say y, by claim 2 d[y] is the distance from s to y passing through nodes in FOUND, we have len(p) >= len(s to y in p) >= d[y] >= d[x], so we proved that d[x] is the distance from s to x when x is added to FOUND, so claim 3 stands
+
