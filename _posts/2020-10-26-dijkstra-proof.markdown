@@ -35,14 +35,13 @@ we'll prove 3 invariants that are rather intuitive once they are spilled out
 
 claim: before each iteration of the while loop, we maintain:  
   1. frontier property: for any node x in FOUND, and any node y not in FOUND, any path(with no loop) from x to y has to go through some node in HEAP
-  2. partial shortest path property: for each node x in HEAP, the value d[x] associated with x is length the shortest path from s to x, that only passes through nodes in FOUND
-  3, shortest path property: when node x is put into FOUND, the value d[x] is the distance from s to x
+  2. partial shortest path property: for each node x in HEAP, the value d[x] associated with x is length the shortest path from s to x, that only passes through nodes in FOUND  
+  3. shortest path property: when node x is put into FOUND, the value d[x] is the distance from s to x
 
 we'll prove them of course by induction, on iterations of the while loop
 
-base case: 
+base case:   
 claim 1: FOUND is empty so this is automatically true
-HEAP is made up of single node s, and every path from s to s has to go through 0 nodes in FOUND, then s(a node in HEAP)
 
 claim 2: only node in HEAP is s, d[s] = 0 is the length of shortest path, since we require every edge to have nonnegative length
 
