@@ -22,7 +22,8 @@ https://leetcode.com/problems/largest-number/
     "5" < "51", 515 < 551
 
 最后我才想到, 原来 def comp(x, y) = strcmp(strcat(x, y), strcat(y, x)) 就可以形成一个定义在非负整数上的一个具有传递性的偏序  
-如果猜到了这一步, 证明这个偏序并不难, 它最终会化为比较x/(10^len(x) - 1)这个属性, 具体这里有人发了一个证明
+如果猜到了这一步, 证明这个偏序并不难, 它最终会化为比较x/(10^len(x) - 1)这个属性, 具体这里有人发了一个证明  
 [https://leetcode.com/problems/largest-number/discuss/291988/A-Proof-of-the-Concatenation-Comparator's-Transtivity](https://leetcode.com/problems/largest-number/discuss/291988/A-Proof-of-the-Concatenation-Comparator's-Transtivity)
 
-在定义了这个偏序之后, 不难证明, 要想获得最大的数, 那么整个数组必须按照整个偏序排序, 因为如果有违背整个序的两个数, 那么必定有违背这个序的相邻的两个数, 那么交换这两个数就能获得更大的数, 这就矛盾了
+在定义了这个偏序之后, 不难证明, 要想获得最大的数, 那么整个数组必须按照这个偏序排序  
+因为如果有违背这个序的两个数, 那么必定有违背这个序的相邻的两个数, 那么交换这两个数就能获得更大的数, 这就矛盾了
