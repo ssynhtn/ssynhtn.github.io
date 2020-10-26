@@ -49,24 +49,23 @@ claim 3: we remove s and add it to FOUND with d[s] = 0
 
 introductory step:
 
-claim 1: suppose after we pull out x from HEAP and add it to FOUND, there exists some path from u in FOUND to v in OTHERS that does not go pass HEAP, WLOG suppose u~v has the smallest # of edges  
-if u is not x, it was previously in FOUND, then u~v has to go pass some node y in HEAP, if y is not x, then y is still in HEAP, contradiction  
-if y is x, then x~v has smaller # of edges, x is now in FOUND, contradiction 
+claim 1: suppose after we pull out x from HEAP and add it to FOUND, there exists some path from u in FOUND to v in OTHERS that does not go past HEAP, WLOG suppose u~v has the smallest # of edges  
+if u is not x, it was previously in FOUND, then u~v has to go pass some node y in HEAP, if y is not x, then y is still in HEAP, contradiction   
+if y is x, then x~v has smaller # of edges, x is now in FOUND, contradiction  
 so u has to be x, consider the next node in path x~v, call it next  
 if it were in FOUND, then it still is, and next~v is a smaller path. if it were not in FOUND, then it was either in HEAP, or is added to HEAP after the operation, both are contradictions.
 
 claim 2:  
 This part is actually similar to the original proof  
 we prove with 2 parts  
-1, for x in HEAP, d[x] >= partial dist(s, x). this is trivial since d[x] has always been the length of some partial path
-2, for x in HEAP, d[x] <= partial dist(s, x).
-after we pull out x from HEAP and add it to FOUND, examine y in HEAP:  denote a~b be a shortest path from a to b in FOUND, and let right arrow -> denote a direct edge between any two nodes, there are 3 possible cases of the partial shortest path from s to y 
-  * first to x, then directly to y: s~x->y  
-  partial dist(s, y) = dist(s, x) + len(x,y) = d[x] + len(x,y)
-  then in the operation on x's neighbors, d[y] is updated to be <= d[x] + len(x,y), so d[y] <= partial dist(s, y)
-  * pass through x, then indirectly to y: s~x~u->y where u is a node in FOUND, since dist(s,u) <= len(s~x~u), when u was add to FOUND, d[y] was update to be <= dist(s,u) + len(u,y) <= len(s~x~u) + len(u,y) = partial dist(s, y)
-  * does not go through x: s~u->y, when u was added to FOUND, d[y] was updated to be <= d[u] + len(u,y) = partial dist(s, y), and it would not ever increase to a larger value
+1, for x in HEAP, d[x] >= partial dist(s, x). this is trivial since d[x] has always been the length of some partial path  
+2, for x in HEAP, d[x] <= partial dist(s, x).  
+after we pull out x from HEAP and add it to FOUND, examine y in HEAP:  
+denote a~b be a shortest path from a to b in FOUND, and let right arrow -> denote a direct edge between any two nodes，
+let u be the predecessor of y, then the part of the path from s to u has to be the shortest path，
+and when u was added to FOUND, d[y] was updated to be <= d[u] + len(u,y) = partial dist(s, y), and it would not ever increase to a larger value
 
 
-when we pull out x from HEAP, by claim 1, any path p from s to x has to go through nodes in FOUND and then a node in HEAP, say y, by claim 2 d[y] is the distance from s to y passing through nodes in FOUND, we have len(p) >= len(s to y in p) >= d[y] >= d[x], so we proved that d[x] is the distance from s to x when x is added to FOUND, so claim 3 stands
-
+claim 3：
+when we pull out x from HEAP, we claim that the partial shortest path from s to x is the shortest path in the whole graph  
+or else by claim 1，the shortest path，has to go through some node y in HEAP first，and the partial shortest path to y is no smaller than that of x because x is the min node of the HEAP
