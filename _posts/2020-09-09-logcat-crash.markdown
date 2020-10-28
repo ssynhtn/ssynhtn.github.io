@@ -9,7 +9,7 @@ categories: adb
 
 可以使用adb查看崩溃信息
 
-adb log -b crash
+adb logcat -b crash
 
 根据文档, 系统进程logd会维护若干环形buffer, 默认的三个buffer是main(这个大概app的log都会到这里吧), system(系统日志), crash(崩溃日志)
 
