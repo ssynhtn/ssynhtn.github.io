@@ -1,0 +1,134 @@
+---
+layout: post
+title:  "可怜的猪"
+date:   2020-11-14 18:24:26 +0800
+categories: math
+---
+
+今天的leetcode challenge是  
+https://leetcode.com/problems/poor-pigs/
+
+之前好像在今日头条上看到了有关这个题的吐槽段子, 当时我瞄了两眼滑过去了
+
+问题是这样的: 有1000个瓶子, 和一些猪. 每个瓶子中, 除了一个是毒药, 其他都是水  
+你可以通过feed these pigs to check which bottle contains the poison, you can feed several bottles to one pig at once and don't need to worry about the concentration/amount of the poison, and you can test a total of 4 rounds. Question is, how many pigs do we need to fix the poisoned bottle
+
+At first I was like, if we are only testing 1 round then this question is easy, because we can feed half of the bottles to 1 pig, and depends on whether it dies or not, we can narrow down the target to half of the bottles, and with 10 pigs we can find out the result out of 1024 bottles
+
+To carry out this method in detail, we can label bottles with an index, from 0 to 999, and we use binary notation to mark them
+
+for the 0th pig, we feed them bottles whose 0th digit is 1  
+for the 1st pig, we feed them bottles whose 1th digit is 1
+.... and so on
+
+when the result turns out, if the 0th pig dies, it means the 0th digit of the poison is 1
+if the 1st pig does not die, it means the 1st digit of the poison is 0
+
+
+To prove that this method is as best as we can get, we prove that with n pigs, we can find the poison out of at most 2^n bottles. We prove this use piegon hole principle:
+
+Suppose we have more than 2^n bottles, no matter how we feed the pigs, we can divide the bottles to 2^n distinct sets: 
+the 0th set consists of bottles drank by none  
+the 1st set consists of bottles drank by 0th pig, but none other  
+... and so on
+the (2^n-1)the set consists of bottles drank by all n pigs
+
+since #bottles > 2^n, at least one of the group has u >= 2 bottles, then in the case that the poison is among these u bottles, we can only conclude that the poison is in these u bottles, and no further conclusion can be drawn since no two pigs distinguishes them
+
+
+那么如果我们可以测试多轮, 情况会怎么样呢  
+一开始我想, 那肯定会比测试1轮需要的猪少吧, 毕竟我们可以重复用🐷  
+会不会是ceil(10/4) = 3呢?  
+你看, 如果第一轮我们用这3只, 第二轮还是这3, 第三轮用3只, 最后一轮只需要1只, 就行了?
+
+问题是, 如果第一轮3只🐷他们吃的共同部分包含毒药, 这样他们第一轮就死了, 后面轮次就没法测试了
+
+那么如果我们四轮分别用a, b, c, d只🐷去测试, 这样最坏的情况下, 每轮都是全部死掉, 我们还是需要10只🐷阿
+
+所以答案是, 不管给我几轮, 总数都是需要10只的
+
+这样的想法是乃义务的, 在多轮测试的情况下, 一只🐷每次都测试1/2的瓶子的做法不是最好的  
+最简单的例子是, 1只🐷2轮能支持多少个瓶子, 是3个  
+对于🐷, 我们第一次不能让它喝混合液体, 否则如果它第一次就死了, 那就找不出来了, 既然如此, 它每一轮都是只能喝一瓶的, 因为那些已经排除的瓶子已经没有必要去喝了, 剩下的瓶子如果去和混合的, 情况和第一次是一样的
+那么我们最多支持从3个瓶子中找出, 因为它两轮可以最多喝两次, 如果这两瓶中有一瓶毒死了它, 那么我们找到了, 如果没有毒死它, 那么第三瓶就是毒药
+
+对2只🐷两轮的分析可以让我们得到答案:  
+we name these two pigs A and B  
+based on the bottles they drink in the first round(no matter they drank or not), we can divide the bottles to 4 groups  
+  * drank by both, u
+  * drank by A, v
+  * drank by B, w
+  * drank by none, x
+
+u <= 1, or else if poison is in u, and both are dead, we fail
+v <= 2, beacause if poison is in v, then A is dead after first round, and we'are left with B to test among v bottles, and in 1 round, 1 pig can be used to find poison from at most 2 bottles
+similarly w <= 2
+x <= 4 for similar reasons: in 1 round, 2 pigs can be used to find poison from at most 4 bottles
+which means total <= 1+2+2+4 = 9 which looks a lot like 3^2
+
+Indeed with induction we can prove that with n pigs, in k rounds we can fix the poison in at most (k+1)^n bottles 
+
+这个结论实在是太过于完美了, 以至于我觉得一定有一个和(k+1)进制有关的方式来证明它, 我想阿想我想到了用k+1进制来描述n只🐷喝水策略的方法
+
+以k = 4为例
+我们使用如下一个k+1=5行, n列的数组
+
+4 4 4 4 4 4 4  .... 4  
+3 3 3 3 3 3 3  .... 3  
+2 2 2 2 2 2 2  .... 2  
+1 1 1 1 1 1 1  .... 1  
+0 0 0 0 0 0 0  .... 0  
+
+对于5^n个瓶子, 我们按5进制给瓶子编号
+
+in first round, we feed the 0th pig the bottles with 4 in the 0th digit(a total of 5^(n-1)bottles), and we feed the 1st pig the bottles with 4 in the 1st digit, and so on, we feed the (n-1)th pig the bottles with 4 in the (n-1)th digit
+
+after the first round, some pigs will die, and others survive, we conclude that if ith pig died, since he only drinks bottles with 4 in the ith digit, the ith digit of the poison has to be 4, and conversely in the indexes where pigs are alive, the digit is undecided, but we exclueded 4, they are in 0~3
+
+now its easy to see where the direction is going
+
+in the second round, we have some m pigs left and m digits undecided, we have 3 rounds left, but those undecided digits are also constrainted by [0, 3] rather than [0, 4]  
+for the pigs alive, we let the 0th pig drink the bottles with 3 in the 0th remaining digit, and so on, 
+after the 2nd round, those died pigs fixed some digits to be 3, and other undecided digits have their constraints narrowed further to [0, 2]
+
+repeat this process, on and on
+
+in the last round, we have some l pigs, and l digits undecided, but only could take 0 or 1, we let ith pig drink bottles with 1 in ith undecided digit, and those who die will mark some digits to be 1, those luncky suvivers will mark other digits to be 0
+
+这个过程是给出了一个检测(1+k)^n个瓶子的策略, 但是它没有证明(n🐷, k🕒)最多只能检测(1+k)^n个瓶子
+
+我想阿想, 我想出了一个证明, 实际上我是在看了力扣的官方答案后想出的这个证明. 官方解并没有真的给出具有说服力的证明, 不过依照官解的思路可以给一个更简洁的证明. but还是先看我的证明
+
+我们首先注意到, 在一个最优策略中, 一个瓶子的水被一只🐷最多喝一次, 理由:  
+如果一只🐷在第一次喝了某瓶水之后直接死了, 那么它没有机会再喝第二次了, 而如果它没有死, 那么本轮测试已经排除了这瓶水有毒, 那么后续测试就不用再让任何🐷来喝它了
+
+我们使用抽屉原理来证明这个问题
+
+不管这些🐷如何被安排喝水, 我们可以把瓶子分成(k+1)^n个组  
+对0~(k+1)^n-1中的数, 每个数根据它的k+1进制表示都对应这样的组:
+
+如果u在第i位上的数字是0, 那么它没有被第i只🐷喝过, 如果它在第j位上的数字是s>0, 那么它被第j只🐷在第s轮喝过
+
+如果瓶子的个数 > (k+1)^n, 那么就有两个瓶子在同一组, 那么当其中一个瓶子是毒药的时候, 我们没法判断毒药在这两个瓶子中的哪一个, 因为每只🐷在每个轮次要么是一起喝它们死掉, 要么是没有喝它们
+
+
+官方解法给🐷设定了k+1个状态: 第一轮死掉, 第二轮死掉,... 第k轮死掉, k轮之后还活着
+
+这样n只🐷最多有(k+1)^n个状态组合
+
+这样确实是很有启发性的
+
+但是这样就证明问题了吗, 显然没有
+
+我们可以这样证明
+
+还是利用抽屉原理
+
+不管我们使用什么算法, 不管是确定性的还是包含随机的算法, 经过k轮操作后, n只🐷的最终状态只有(k+1)^n中情况
+
+对于L > (k+1)^n个瓶子, 毒药有L种可能性, 那么其中必有两种输入, 在经过操作后, 🐷的状态是一样的, 因此这个算法在出现这种状态时无法判断是这两种输入中的哪个, 因此就找不出毒药
+
+所以官方解答只是给出一个瓶子上限的证明, 还是不算完全解决问题呢
+
+
+
