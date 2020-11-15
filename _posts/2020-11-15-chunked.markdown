@@ -1,0 +1,48 @@
+---
+layout: post
+title:  "Transfer-Encoding chuncked是什么"
+date:   2020-11-15 18:24:26 +0800
+categories: http
+---
+
+有时候会看到http的response中会有这个Transfer-Encoding: chunked
+
+按字面意思理解, 应该是把response"分块"返回了
+
+那么具体是怎么分块返回的呢, 为什么要这么做的
+
+实际上问题是, http的body并没有一个终止符, 因为所有的字符都可能是合法的内容, 即使是crlf, 在body中也是可以包含的, 因此http标记body结束的方式是在header中使用content-length
+
+这对于绝大部分content-length可以预先知道的东西, 比如文件是适用的
+
+但是如果一个东西是实时生成的, 要获取它的content-length, 必须等待整个response全部生成  
+这对于html文件之类的东西是合适的, 因为它在内存中占用很小, 但是如果整个response很大呢
+
+这个时候就应该用Transfer-Encoding: chunked了
+
+这个东西很简单, 就是把response分成多段, 每段大小可以不一致, 在每段前都加上该段的hex长度就好了
+
+具体格式是  
+henLenCRLF
+contentCRLF
+
+当碰到hexLen为0的那一段, 就知道内容结束了
+0CRLF
+CRLF
+
+okhttp的BridgeInterceptor中, 有这样的处理
+
+    long contentLength = body.contentLength();
+    if (contentLength != -1) {
+      requestBuilder.header("Content-Length", Long.toString(contentLength));
+      requestBuilder.removeHeader("Transfer-Encoding");
+    } else {
+      requestBuilder.header("Transfer-Encoding", "chunked");
+      requestBuilder.removeHeader("Content-Length");
+    }
+
+所以如果request中想要使用chuncked, 只要自定义请求body的contentLength()方法返回-1就可以了
+
+但是实际运行中会发现, 不管是浏览器/postman, 还是httpLoggingInterceptor, 都无法看到body具体的分段, 最后使用了wireshark才看到
+
+okhttp处理chunked数据的逻辑在ExchangeCodec这个接口的子类中, 内部实现上对它的调用是早于network interceptor的, 因此在network interceptor看到的是解析过的没有分段的数据
