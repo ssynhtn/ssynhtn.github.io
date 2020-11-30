@@ -1,0 +1,25 @@
+---
+layout: post
+title:  "MVC or MVP"
+date:   2020-11-26 18:24:26 +0800
+categories: pattern
+---
+
+如果你问我什么是mvc, mvp, mvvm, 它们有什么区别, 我会回答: 不知道, 不是很清楚
+
+因为我甚至不知道我用的是哪个
+
+我在写代码的时候从来不会这样考虑哪个类是哪个角色, 因此它应该如何behave, 否则它就违反了mvc的规定, 我只关心, 获取数据, 呈现数据, 保存数据  
+
+即使在我使用了jetpack的ViewModel类时, 我也是这样  
+我的新同事看到我的代码中使用了ViewModel时问我, “你用的的是mvvm模式啊”, 颇有赞许之意. 我的脑内: 什么mvvm? 我从来没搞懂过
+
+这些模式的定义模棱两可, 网上讲解这些模式的文章很多, 仔细一看就会发现, 它们甚至对一个mvc有不同的定义  
+
+https://www.ruanyifeng.com/blog/2015/02/mvcmvp_mvvm.html
+
+https://developer.apple.com/library/archive/documentation/General/Conceptual/DevPedia-CocoaCore/MVC.html
+
+实际上
+因为, 我只知道View是v, UIViewController毫无疑问是c, 而Activity/Fragment大概也是c, 
+而m, 取决于你对数据的封装程度, 它可能只是保存在c中的一个List, 也可能是一个
