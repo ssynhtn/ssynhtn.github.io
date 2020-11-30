@@ -46,4 +46,4 @@ weakhashmap本身不支持线程安全, 其它put, remove方法都没有同步, 
 
 虽然weakhashmap不是线程安全的, 但是大部分java的集合类在多线程中读内容是可以保证安全的, 这个其实很正常
 
-而weakhashmap, 它的size()方法中也检查了清理weakreference, 所以如果从多个线程查询一下size, 就会出现多个线程并发修改数据结构的情况, 所以这里使用queue同步是为了保证读的线程安全. 至于用queue这个对象作为锁, 只是方便
+而weakhashmap, 它的size(), get()等方法都会先清理一下weakreference, 所以如果从多个线程查询一下size, 就会出现多个线程并发修改数据结构的情况, 所以这里使用queue同步是为了保证读的线程安全. 至于用queue这个对象作为锁, 只是方便
