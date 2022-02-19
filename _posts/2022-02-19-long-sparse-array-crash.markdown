@@ -71,7 +71,7 @@ i是通过二分查找得到的插入index: ~ContainerHelpers.binarySearch(mKeys
 
 这个不难理解, 因为在[0, mSize)这个范围二分查找, 要么找到目标值, 那么下标应该是[0, mSize)这个范围的, 要么找不到需要insert, 那么下标是[0, mSize]这个范围的
 
-换句话说mSize已经至少是24了, 而mValues.length = 23
+换句话说mSize已经至少是24了, 而mValues.length = 23, 这里就是一个错误的数据了
 
 一开始想到, 是因为第一个线程执行了mSize++, 而且第二个线程还在用老的mValues吧?
 
