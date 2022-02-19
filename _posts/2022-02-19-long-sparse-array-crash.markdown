@@ -77,6 +77,7 @@ i是通过二分查找得到的插入index: ~ContainerHelpers.binarySearch(mKeys
 
 试了一下发现不行, 仔细看确实如此, 如果第一个线程执行了mSize++, 那么在第一个线程mValues = GrowingArrayUtils.insert()也已经执行了, 那么mValues也已经应该是至少有长度24的
 
-后来经过多次各种尝试之后发现可以这样: 第一个线程执行A的时候先卡住, 切换到第二个线程, 第二个线程执行了若干次put操作, 讲mSize增加和Values扩容, 后面再执行A的时候, 切换到第一个线程返回, 讲原来那个更小的mValues返回, 这个时候再切换回第二个线程, 就会出现i > mValues.length的情况出现了
+后来经过多次各种尝试之后发现可以这样: 第一个线程执行A的时候先卡住, 切换到第二个线程, 第二个线程执行了若干次put操作, 将mSize增加和Values扩容, 后面再执行A的时候, 切换到第一个线程并返回insert方法, 将原来那个更小的mValues赋值给mValues, 这个时候再切换回第二个线程, 就会出现i > mValues.length的情况了
 
-视频链接: https://github.com/ssynhtn/sparse-array-crash/blob/master/sparse-array-crash.mov
+demo: https://github.com/ssynhtn/sparse-array-crash
+录屏: https://github.com/ssynhtn/sparse-array-crash/blob/master/sparse-array-crash.mov
