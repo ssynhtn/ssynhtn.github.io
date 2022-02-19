@@ -29,6 +29,8 @@ LongSparseArray怎么会crash呢, 稍微看一下LongSparseArray的代码, 发�
 那就在demo app里尝试手动复现一下吧
 
 首先需要阅读一下LongSparseArray全文...
+ 
+嗯建议阅读, 否则鸡同鸭讲下面也没啥好看的
 
 它使用了二分查找来实现了一个比较简单的map功能
 
